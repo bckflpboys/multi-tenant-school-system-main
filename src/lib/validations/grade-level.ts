@@ -8,9 +8,7 @@ export const gradeLevelFormSchema = z.object({
     message: "Grade level code is required.",
   }),
   description: z.string().optional(),
-  capacity: z.number().min(1, {
-    message: "Capacity must be at least 1 student.",
-  }).optional(),
+  capacity: z.number().optional(),
   headTeacherId: z.string().optional(),
   subjects: z.array(z.string()).min(1, {
     message: "Please add at least one subject.",

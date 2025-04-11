@@ -44,6 +44,13 @@ export const FEATURES: { [key: string]: Feature } = {
     tier: 'basic',
     enabled: true,
   },
+  subjects: {
+    id: 'subjects',
+    name: 'Subjects',
+    description: 'Manage school subjects and curriculum',
+    tier: 'basic',
+    enabled: true,
+  },
   lessons: {
     id: 'lessons',
     name: 'Lesson Planning',

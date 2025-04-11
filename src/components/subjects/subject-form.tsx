@@ -13,26 +13,27 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { gradeLevelFormSchema, type GradeLevelFormValues } from "@/lib/validations/grade-level"
+import { subjectFormSchema, type SubjectFormValues } from "@/lib/validations/subject"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-interface GradeLevelFormProps {
-  initialData?: GradeLevelFormValues
-  onSubmit: (data: GradeLevelFormValues) => void
+interface SubjectFormProps {
+  initialData?: SubjectFormValues
+  onSubmit: (data: SubjectFormValues) => void
   isLoading?: boolean
 }
 
-export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelFormProps) {
-  const form = useForm<GradeLevelFormValues>({
-    resolver: zodResolver(gradeLevelFormSchema),
+export function SubjectForm({ initialData, onSubmit, isLoading }: SubjectFormProps) {
+  const form = useForm<SubjectFormValues>({
+    resolver: zodResolver(subjectFormSchema),
     defaultValues: initialData ?? {
       name: "",
       code: "",
       description: "",
-      capacity: undefined,
+      department: "",
+      gradeLevel: "",
       headTeacherId: "",
-      subjects: [],
-      fees: undefined,
+      teacherIds: [],
+      credits: undefined,
     },
   })
 
@@ -41,7 +42,7 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <Card className="border border-gray-300 shadow-sm">
           <CardHeader className="bg-gray-50 border-b border-gray-300">
-            <CardTitle className="text-lg font-medium text-gray-900">Grade Level Information</CardTitle>
+            <CardTitle className="text-lg font-medium text-gray-900">Subject Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-4">
             <div className="grid grid-cols-2 gap-6">
@@ -50,10 +51,10 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Grade Level Name</FormLabel>
+                    <FormLabel className="text-gray-700">Subject Name</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Enter grade level name (e.g., Grade 1, Kindergarten 1)" 
+                        placeholder="Enter subject name (e.g., Mathematics, English)" 
                         {...field}
                         className="h-11 border-gray-300 focus:border-gray-400"
                       />
@@ -67,10 +68,10 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Grade Level Code</FormLabel>
+                    <FormLabel className="text-gray-700">Subject Code</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Enter grade level code (e.g., G1, K1)" 
+                        placeholder="Enter subject code (e.g., MATH101, ENG101)" 
                         {...field}
                         className="h-11 border-gray-300 focus:border-gray-400"
                       />
@@ -89,7 +90,7 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
                   <FormLabel className="text-gray-700">Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter grade level description (optional)"
+                      placeholder="Enter subject description (optional)"
                       className="min-h-[80px] resize-none border-gray-300 focus:border-gray-400"
                       {...field}
                     />
@@ -102,16 +103,14 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
             <div className="grid grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="capacity"
+                name="department"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Capacity</FormLabel>
+                    <FormLabel className="text-gray-700">Department (Optional)</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number"
-                        placeholder="Enter maximum capacity (optional)" 
+                        placeholder="Enter department (e.g., Mathematics, Sciences, Languages) - Optional" 
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                         className="h-11 border-gray-300 focus:border-gray-400"
                       />
                     </FormControl>
@@ -121,14 +120,51 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
               />
               <FormField
                 control={form.control}
-                name="fees"
+                name="gradeLevel"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Fees</FormLabel>
+                    <FormLabel className="text-gray-700">Grade Level</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter grade level (e.g., G1, K1)" 
+                        {...field}
+                        className="h-11 border-gray-300 focus:border-gray-400"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="headTeacherId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700">Head Teacher</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter head teacher ID" 
+                        {...field}
+                        className="h-11 border-gray-300 focus:border-gray-400"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="credits"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700">Credits</FormLabel>
                     <FormControl>
                       <Input 
                         type="number"
-                        placeholder="Enter fees amount (optional)" 
+                        placeholder="Enter credits (optional)" 
                         {...field}
                         onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                         className="h-11 border-gray-300 focus:border-gray-400"
@@ -142,33 +178,15 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
 
             <FormField
               control={form.control}
-              name="headTeacherId"
+              name="teacherIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Head Teacher</FormLabel>
+                  <FormLabel className="text-gray-700">Teachers</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Enter head teacher ID (optional)" 
-                      {...field}
-                      className="h-11 border-gray-300 focus:border-gray-400"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="subjects"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Subjects</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter subjects (comma separated)" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))}
+                      placeholder="Enter teacher IDs (comma separated)" 
+                      value={field.value.join(", ")}
+                      onChange={(e) => field.onChange(e.target.value.split(',').map(id => id.trim()).filter(id => id !== ""))}
                       className="h-11 border-gray-300 focus:border-gray-400"
                     />
                   </FormControl>
@@ -181,7 +199,7 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
 
         <div className="flex justify-end pt-4">
           <Button type="submit" disabled={isLoading} className="min-w-[120px]">
-            {isLoading ? "Creating..." : "Create Grade Level"}
+            {isLoading ? "Creating..." : "Create Subject"}
           </Button>
         </div>
       </form>

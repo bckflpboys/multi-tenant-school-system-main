@@ -20,6 +20,7 @@ import {
   Building2,
   Wallet,
   UsersRound,
+  BookText,
 } from "lucide-react"
 import { useFeatureAccess } from "@/hooks/useFeatureAccess"
 import type { UserRole } from "@/types/permissions"
@@ -91,6 +92,13 @@ const sidebarNavItems = [
     icon: GraduationCap,
     description: "Manage grade levels and sections",
     feature: 'grade_levels',
+  },
+  {
+    title: "Subjects",
+    href: "/dashboard/subjects",
+    icon: BookText,
+    description: "Manage school subjects and curriculum",
+    feature: 'subjects',
   },
   {
     title: "Classes",
