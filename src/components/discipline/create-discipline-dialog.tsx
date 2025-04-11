@@ -10,33 +10,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus } from "lucide-react"
 import { DisciplineForm } from "./discipline-form"
+import { Plus } from "lucide-react"
 import type { DisciplineFormValues } from "@/lib/validations/discipline"
-import { useToast } from "@/components/ui/use-toast"
 
 export function CreateDisciplineDialog() {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
 
   const onSubmit = async (data: DisciplineFormValues) => {
     setIsLoading(true)
+    
     try {
-      // TODO: Implement discipline record creation
+      // TODO: Implement discipline record creation logic
       console.log(data)
-      toast({
-        title: "Success",
-        description: "Discipline record created successfully",
-      })
       setOpen(false)
     } catch (error) {
       console.error(error)
-      toast({
-        title: "Error",
-        description: "Failed to create discipline record",
-        variant: "destructive",
-      })
     } finally {
       setIsLoading(false)
     }
@@ -50,11 +40,11 @@ export function CreateDisciplineDialog() {
           Add Discipline Record
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Discipline Record</DialogTitle>
+          <DialogTitle className="text-2xl">Add New Discipline Record</DialogTitle>
           <DialogDescription>
-            Create a new discipline record. Fill in the required information below.
+            Fill in the discipline record information below. All fields marked with * are required.
           </DialogDescription>
         </DialogHeader>
         <DisciplineForm onSubmit={onSubmit} isLoading={isLoading} />
