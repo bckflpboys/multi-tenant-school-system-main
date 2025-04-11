@@ -17,9 +17,19 @@ export function MainNav({
       active: pathname === "/dashboard",
     },
     {
+      href: "/dashboard/schools",
+      label: "Schools",
+      active: pathname === "/dashboard/schools",
+    },
+    {
       href: "/dashboard/classes",
       label: "Classes",
       active: pathname === "/dashboard/classes",
+    },
+    {
+      href: "/dashboard/lessons",
+      label: "Lessons",
+      active: pathname === "/dashboard/lessons",
     },
     {
       href: "/dashboard/students",
@@ -48,10 +58,8 @@ export function MainNav({
           key={route.href}
           href={route.href}
           className={cn(
-            "text-sm transition-colors hover:text-gray-900 relative py-1",
-            route.active
-              ? "text-blue-600 font-medium before:absolute before:bottom-0 before:left-0 before:h-0.5 before:w-full before:bg-blue-600 before:content-['']"
-              : "text-gray-500 hover:before:absolute hover:before:bottom-0 hover:before:left-0 hover:before:h-0.5 hover:before:w-full hover:before:bg-gray-200 hover:before:content-['']"
+            "flex items-center gap-3 rounded-lg px-2 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100/60",
+            route.active && "text-blue-600 font-medium"
           )}
         >
           {route.label}

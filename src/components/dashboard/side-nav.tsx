@@ -11,6 +11,14 @@ import {
   MessageSquare,
   Bell,
   Settings,
+  BookOpenCheck,
+  UserSquare2,
+  ClipboardCheck,
+  Shield,
+  CalendarDays,
+  Newspaper,
+  Building2,
+  Wallet,
 } from "lucide-react"
 
 const sidebarNavItems = [
@@ -21,10 +29,22 @@ const sidebarNavItems = [
     description: "Overview of your school system",
   },
   {
+    title: "Schools",
+    href: "/dashboard/schools",
+    icon: Building2,
+    description: "Manage multiple schools and campuses",
+  },
+  {
     title: "Classes",
     href: "/dashboard/classes",
     icon: BookOpen,
     description: "Manage your classes and schedules",
+  },
+  {
+    title: "Lessons",
+    href: "/dashboard/lessons",
+    icon: BookOpenCheck,
+    description: "View and manage lessons",
   },
   {
     title: "Students",
@@ -37,6 +57,42 @@ const sidebarNavItems = [
     href: "/dashboard/teachers",
     icon: GraduationCap,
     description: "Manage teaching staff",
+  },
+  {
+    title: "Parents",
+    href: "/dashboard/parents",
+    icon: UserSquare2,
+    description: "Parent information and communication",
+  },
+  {
+    title: "Finances",
+    href: "/dashboard/finances",
+    icon: Wallet,
+    description: "Manage fees, payments and expenses",
+  },
+  {
+    title: "Examinations",
+    href: "/dashboard/examinations",
+    icon: ClipboardCheck,
+    description: "Manage exams, tests and assessments",
+  },
+  {
+    title: "Discipline",
+    href: "/dashboard/discipline",
+    icon: Shield,
+    description: "Track and manage student conduct",
+  },
+  {
+    title: "School Life",
+    href: "/dashboard/school-life",
+    icon: CalendarDays,
+    description: "Events, activities, and campus life",
+  },
+  {
+    title: "Blog",
+    href: "/dashboard/blog",
+    icon: Newspaper,
+    description: "School news and announcements",
   },
   {
     title: "Messages",
