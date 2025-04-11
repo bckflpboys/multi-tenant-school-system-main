@@ -19,6 +19,7 @@ import {
   Newspaper,
   Building2,
   Wallet,
+  UsersRound,
 } from "lucide-react"
 import { useFeatureAccess } from "@/hooks/useFeatureAccess"
 import type { UserRole } from "@/types/permissions"
@@ -76,6 +77,13 @@ const sidebarNavItems = [
     icon: Users,
     description: "View and manage student records",
     feature: 'students',
+  },
+  {
+    title: "Staff",
+    href: "/dashboard/staff",
+    icon: UsersRound,
+    description: "Manage all school staff members",
+    feature: 'staff',
   },
   {
     title: "Teachers",

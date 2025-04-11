@@ -1,4 +1,14 @@
-export type UserRole = 'super_admin' | 'school_admin' | 'teacher' | 'student' | 'parent';
+export type UserRole = 
+  | 'super_admin'      // System administrator who manages all schools
+  | 'school_admin'     // School principal/administrator
+  | 'admin_staff'      // Administrative staff (registrar, accountant, etc.)
+  | 'head_teacher'     // Department heads or senior teachers
+  | 'teacher'          // Regular teachers
+  | 'student'          // Students
+  | 'parent'           // Parents/guardians
+  | 'librarian'        // Library staff
+  | 'counselor'        // School counselor
+  | 'nurse';           // School nurse/medical staff
 
 export type Feature = {
   id: string;
@@ -38,6 +48,13 @@ export const FEATURES: { [key: string]: Feature } = {
     id: 'students',
     name: 'Student Management',
     description: 'Manage student records and information',
+    tier: 'basic',
+    enabled: true,
+  },
+  staff: {
+    id: 'staff',
+    name: 'Staff Management',
+    description: 'Manage all school staff members',
     tier: 'basic',
     enabled: true,
   },
