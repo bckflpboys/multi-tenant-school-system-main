@@ -27,12 +27,12 @@ export default function DashboardLayout({
         </div>
       </header>
       <div className="flex">
-        <aside className="fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-64 shrink-0 border-r border-gray-200 bg-white shadow-[1px_0_0_0_rgba(0,0,0,0.05)] md:sticky">
+        <aside className="fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-80 shrink-0 border-r border-gray-200 bg-white shadow-[1px_0_0_0_rgba(0,0,0,0.05)] md:sticky">
           <div className="flex h-full flex-col py-6">
-            <div className="px-3 pb-4 border-b border-gray-100">
+            <div className="px-4 pb-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900">Navigation</h2>
             </div>
-            <div className="flex-1 overflow-y-auto px-2 pt-4">
+            <div className="flex-1 overflow-y-auto px-4 pt-4">
               <SideNav />
             </div>
           </div>
