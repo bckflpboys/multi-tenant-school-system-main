@@ -1,0 +1,91 @@
+"use client"
+
+import { Metadata } from "next"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Overview } from "@/components/dashboard/overview"
+import { RecentActivity } from "@/components/dashboard/recent-activity"
+import { Users, GraduationCap, BookOpen, Bell } from "lucide-react"
+
+export default function DashboardPage() {
+  return (
+    <div className="flex-1 space-y-4 p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight text-gray-800">Dashboard</h2>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-white border-2 border-gray-200 shadow-sm hover:shadow-md transition-all hover:border-gray-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Total Students
+            </CardTitle>
+            <div className="h-8 w-8 rounded-full bg-blue-50 p-2 border border-blue-200">
+              <Users className="h-4 w-4 text-blue-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-800">245</div>
+            <p className="text-xs text-gray-500 mt-1">+4 new this month</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white border-2 border-gray-200 shadow-sm hover:shadow-md transition-all hover:border-gray-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Total Teachers
+            </CardTitle>
+            <div className="h-8 w-8 rounded-full bg-green-50 p-2 border border-green-200">
+              <GraduationCap className="h-4 w-4 text-green-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-800">15</div>
+            <p className="text-xs text-gray-500 mt-1">+2 new this month</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white border-2 border-gray-200 shadow-sm hover:shadow-md transition-all hover:border-gray-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Active Classes</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-purple-50 p-2 border border-purple-200">
+              <BookOpen className="h-4 w-4 text-purple-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-800">12</div>
+            <p className="text-xs text-gray-500 mt-1">+1 since last week</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white border-2 border-gray-200 shadow-sm hover:shadow-md transition-all hover:border-gray-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Announcements
+            </CardTitle>
+            <div className="h-8 w-8 rounded-full bg-orange-50 p-2 border border-orange-200">
+              <Bell className="h-4 w-4 text-orange-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-800">4</div>
+            <p className="text-xs text-gray-500 mt-1">2 new today</p>
+          </CardContent>
+        </Card>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4 bg-white border-2 border-gray-200 shadow-sm hover:shadow-md transition-all hover:border-gray-300">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-gray-800">Overview</CardTitle>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <Overview />
+          </CardContent>
+        </Card>
+        <Card className="col-span-3 bg-white border-2 border-gray-200 shadow-sm hover:shadow-md transition-all hover:border-gray-300">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-gray-800">Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RecentActivity />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
