@@ -37,6 +37,13 @@ export const FEATURES: { [key: string]: Feature } = {
     tier: 'basic',
     enabled: true,
   },
+  grade_levels: {
+    id: 'grade_levels',
+    name: 'Grade Levels',
+    description: 'Manage grade levels and sections',
+    tier: 'basic',
+    enabled: true,
+  },
   lessons: {
     id: 'lessons',
     name: 'Lesson Planning',
