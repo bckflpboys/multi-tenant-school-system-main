@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FaSchool, FaEnvelope, FaMapMarkerAlt, FaPhone, FaCalendarAlt, FaArrowRight } from 'react-icons/fa'
+import { useRouter } from 'next/navigation'
 
 interface School {
   _id: string
@@ -16,6 +17,7 @@ interface School {
 }
 
 export function SchoolsList() {
+  const router = useRouter()
   const [schools, setSchools] = useState<School[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -115,6 +117,7 @@ export function SchoolsList() {
               <Button 
                 variant="default"
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-base font-medium px-8 py-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group flex items-center justify-center gap-2"
+                onClick={() => router.push(`/dashboard/schools/${school._id}`)}
               >
                 <span>View Details</span>
                 <FaArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
