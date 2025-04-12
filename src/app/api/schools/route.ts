@@ -12,27 +12,40 @@ interface SchoolDoc extends z.infer<typeof schoolApiSchema> {
   updatedAt: Date;
 }
 
-export async function POST(request: Request) {
+export async function GET() {
   try {
-    console.log("Received school creation request");
-    
-    // Parse and validate the request body
-    const json = await request.json()
-    console.log("Request body:", json);
-    
-    const body = schoolApiSchema.parse(json)
-    console.log("Validation passed");
-
     // Connect to MongoDB
     const client = await clientPromise;
     const systemDb = client.db('system-db');
     const schoolsCollection = systemDb.collection<SchoolDoc>('schools');
-    console.log("Connected to system-db");
+
+    // Fetch all schools
+    const schools = await schoolsCollection.find({}).toArray();
+
+    return NextResponse.json({ schools }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching schools:", error);
+    return NextResponse.json(
+      { message: "Something went wrong", error: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    console.log("Received school creation request");
+    
+    const json = await request.json()
+    const body = schoolApiSchema.parse(json)
+
+    const client = await clientPromise;
+    const systemDb = client.db('system-db');
+    const schoolsCollection = systemDb.collection<SchoolDoc>('schools');
 
     // Check if school email already exists
     const existingSchool = await schoolsCollection.findOne({ email: body.email })
     if (existingSchool) {
-      console.log("School email already exists");
       return NextResponse.json(
         { message: "School with this email already exists" },
         { status: 400 }
@@ -52,7 +65,6 @@ export async function POST(request: Request) {
 
     // Insert the school in system-db
     await schoolsCollection.insertOne(schoolDoc)
-    console.log("Created school in system-db:", schoolId);
 
     try {
       // Initialize the school's database
@@ -63,7 +75,6 @@ export async function POST(request: Request) {
       for (const collection of collections) {
         await schoolDb.createCollection(collection);
       }
-      console.log("Created initial collections in school's database");
 
       return NextResponse.json(
         { 

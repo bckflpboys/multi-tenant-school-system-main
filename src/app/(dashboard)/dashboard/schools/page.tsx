@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { CreateSchoolDialog } from "../../../../components/schools/create-school-dialog"
+import { SchoolsList } from "@/components/schools/schools-list"
 
 export const metadata: Metadata = {
   title: "Schools",
@@ -19,10 +20,9 @@ export default function SchoolsPage() {
         <CreateSchoolDialog />
       </div>
 
-      <div className="rounded-lg border bg-white shadow-sm">
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
         <div className="p-6">
-          {/* TODO: Add school table/list component */}
-          <p className="text-gray-500">No schools found. Add your first school to get started.</p>
+          <SchoolsList />
         </div>
       </div>
     </div>
