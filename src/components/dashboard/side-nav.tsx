@@ -27,17 +27,32 @@ import type { UserRole } from "@/types/permissions"
 
 // Mock data - replace with real data from your auth system
 const mockUser = {
-  role: 'school_admin' as UserRole,
+  role: 'super_admin' as UserRole,  // Changed to super_admin to enable all features
   schoolId: '123',
   subscription: {
     schoolId: '123',
-    tier: 'premium' as const,
+    tier: 'enterprise' as const,  // Changed to enterprise tier for maximum access
     features: {
-      // Override default tier settings
-      blog: false, // Disable blog even though it's in premium
+      // Enable all features
+      students: true,
+      teachers: true,
+      parents: true,
+      staff: true,
+      classes: true,
+      lessons: true,
+      examinations: true,
+      discipline: true,
+      finances: true,
+      blog: true,
+      messages: true,
+      announcements: true,
+      settings: true,
+      school_life: true,
+      grade_levels: true,
+      subjects: true,
     },
     customFeatures: {
-      api_access: true, // Enable API access even though it's enterprise
+      api_access: true,
     }
   }
 }

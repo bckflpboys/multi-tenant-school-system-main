@@ -18,10 +18,26 @@ export function useFeatureAccess({
   useEffect(() => {
     // Super admin has access to everything
     if (userRole === 'super_admin') {
-      const allFeatures = Object.keys(FEATURES).reduce((acc, key) => {
-        acc[key] = true;
-        return acc;
-      }, {} as { [key: string]: boolean });
+      const allFeatures = {
+        dashboard: true,
+        students: true,
+        teachers: true,
+        parents: true,
+        staff: true,
+        classes: true,
+        lessons: true,
+        examinations: true,
+        discipline: true,
+        finances: true,
+        blog: true,
+        messages: true,
+        announcements: true,
+        settings: true,
+        school_life: true,
+        grade_levels: true,
+        subjects: true,
+        schools: true,
+      };
       
       setAccessibleFeatures(allFeatures);
       return;
