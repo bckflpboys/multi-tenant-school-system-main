@@ -32,6 +32,27 @@ export interface SchoolSubscription {
 
 export const FEATURES: { [key: string]: Feature } = {
   // Basic Features
+  dashboard: {
+    id: 'dashboard',
+    name: 'Dashboard',
+    description: 'School system overview',
+    tier: 'basic',
+    enabled: true,
+  },
+  schools: {
+    id: 'schools',
+    name: 'Schools Management',
+    description: 'Manage multiple schools',
+    tier: 'basic',
+    enabled: true,
+  },
+  principals: {
+    id: 'principals',
+    name: 'Principals Management',
+    description: 'Manage school principals',
+    tier: 'basic',
+    enabled: true,
+  },
   classes: {
     id: 'classes',
     name: 'Class Management',

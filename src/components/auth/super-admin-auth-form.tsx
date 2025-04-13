@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { superAdminAuthSchema, type SuperAdminAuthSchema } from "@/lib/validations/super-admin"
+import { superAdminSignInSchema, superAdminSignUpSchema, type SuperAdminSignInSchema, type SuperAdminSignUpSchema } from "@/lib/validations/super-admin"
 import { signIn } from "next-auth/react"
 
 interface SuperAdminAuthFormProps {
@@ -28,23 +28,25 @@ export function SuperAdminAuthForm({ mode }: SuperAdminAuthFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
 
-  const form = useForm<SuperAdminAuthSchema>({
-    resolver: zodResolver(superAdminAuthSchema),
+  const schema = mode === "signin" ? superAdminSignInSchema : superAdminSignUpSchema
+  const form = useForm<SuperAdminSignInSchema | SuperAdminSignUpSchema>({
+    resolver: zodResolver(schema),
     defaultValues: {
-      name: "",
+      ...(mode === "signup" ? { name: "" } : {}),
       email: "",
       password: "",
-      confirmPassword: "",
+      ...(mode === "signup" ? { confirmPassword: "" } : {}),
     },
   })
 
-  async function onSubmit(data: SuperAdminAuthSchema) {
+  async function onSubmit(data: SuperAdminSignInSchema | SuperAdminSignUpSchema) {
     setIsLoading(true)
+    console.log("Form submitted:", { email: data.email, mode });
 
     try {
       if (mode === "signup") {
         console.log("Sending signup data:", {
-          name: data.name,
+          name: (data as SuperAdminSignUpSchema).name,
           email: data.email,
           // Don't log password in production
         });
@@ -55,7 +57,7 @@ export function SuperAdminAuthForm({ mode }: SuperAdminAuthFormProps) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name: data.name,
+            name: (data as SuperAdminSignUpSchema).name,
             email: data.email,
             password: data.password,
           }),
@@ -72,11 +74,14 @@ export function SuperAdminAuthForm({ mode }: SuperAdminAuthFormProps) {
       }
 
       // Sign in after successful signup or when in signin mode
+      console.log("Attempting to sign in...");
       const signInResult = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
-      })
+      });
+      
+      console.log("Sign in result:", signInResult);
 
       if (signInResult?.error) {
         throw new Error(signInResult.error)
@@ -152,7 +157,12 @@ export function SuperAdminAuthForm({ mode }: SuperAdminAuthFormProps) {
             )}
           />
         )}
-        <Button className="w-full" type="submit" disabled={isLoading}>
+        <Button 
+          className="w-full" 
+          type="submit" 
+          disabled={isLoading}
+          onClick={() => console.log("Button clicked")}
+        >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {mode === "signup" ? "Create Account" : "Sign In"}
         </Button>

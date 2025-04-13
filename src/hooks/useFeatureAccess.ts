@@ -20,6 +20,8 @@ export function useFeatureAccess({
     if (userRole === 'super_admin') {
       const allFeatures = {
         dashboard: true,
+        schools: true,
+        principals: true,
         students: true,
         teachers: true,
         parents: true,
@@ -36,7 +38,6 @@ export function useFeatureAccess({
         school_life: true,
         grade_levels: true,
         subjects: true,
-        schools: true,
       };
       
       setAccessibleFeatures(allFeatures);

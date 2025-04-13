@@ -2,7 +2,6 @@
 
 import { MainNav } from "@/components/dashboard/main-nav"
 import { SideNav } from "@/components/dashboard/side-nav"
-import { UserNav } from "@/components/dashboard/user-nav"
 
 export default function DashboardLayout({
   children,
@@ -12,8 +11,8 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50/95">
       <header className="sticky top-0 z-40 border-b bg-white shadow-sm backdrop-blur-sm bg-white/60 supports-[backdrop-filter]:bg-white/60">
-        <div className="container flex h-16 items-center justify-between py-4 px-8">
-          <div className="flex items-center gap-8">
+        <div className="container flex h-16 items-center py-4 px-8">
+          <div className="flex items-center gap-8 flex-1">
             <a href="/dashboard" className="flex items-center gap-2 font-semibold text-lg text-gray-900">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-blue-600">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -23,7 +22,6 @@ export default function DashboardLayout({
             </a>
             <MainNav />
           </div>
-          <UserNav />
         </div>
       </header>
       <div className="flex">

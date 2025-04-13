@@ -34,6 +34,9 @@ const mockUser = {
     tier: 'enterprise' as const,  // Changed to enterprise tier for maximum access
     features: {
       // Enable all features
+      dashboard: true,
+      schools: true,
+      principals: true,
       students: true,
       teachers: true,
       parents: true,
@@ -71,6 +74,14 @@ const sidebarNavItems = [
     icon: Building2,
     description: "Manage multiple schools and campuses",
     feature: 'schools', // Super admin only
+    superAdminOnly: true,
+  },
+  {
+    title: "Principals",
+    href: "/dashboard/principals",
+    icon: UsersRound,
+    description: "Manage school principals",
+    feature: 'principals', // Super admin only
     superAdminOnly: true,
   },
   {
