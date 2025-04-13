@@ -7,7 +7,7 @@ import { z } from "zod"
 
 // Define the school document type
 interface SchoolDoc extends z.infer<typeof schoolApiSchema> {
-  _id: string;
+  _id: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     // Generate a new school ID
-    const schoolId = new Types.ObjectId().toString()
+    const schoolId = new Types.ObjectId()
 
     // Create the school document
     const schoolDoc: SchoolDoc = {
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
     try {
       // Initialize the school's database
-      const schoolDb = client.db(`school-${schoolId}`);
+      const schoolDb = client.db(`school-${schoolId.toString()}`);
       
       // Create initial collections in the school's database
       const collections = ['users', 'classes', 'subjects'];
