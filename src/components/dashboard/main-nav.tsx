@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
-import { signOut, useSession } from "next-auth/react"
+import { signOut } from "next-auth/react"
 import {
   Avatar,
   AvatarFallback,
@@ -13,14 +13,13 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { toast } from "react-hot-toast"
+import { Bell, LogOut, Settings, User } from "lucide-react"
 
 interface UserData {
   name: string;
@@ -141,49 +140,85 @@ export function MainNav({
       </nav>
 
       {/* User Profile Dropdown */}
-      <div className="ml-auto flex items-center gap-2">
-        <div className="hidden md:flex flex-col items-end">
-          <p className="text-sm font-medium text-gray-900">{user?.name || 'Loading...'}</p>
-          <p className="text-xs text-gray-500 capitalize">{user?.userType}</p>
+      <div className="ml-auto flex items-center gap-3">
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5 text-gray-500" />
+          <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
+        </Button>
+        <div className="hidden md:flex flex-col items-end gap-0">
+          <p className="text-base font-medium text-gray-900 leading-tight">
+            {user?.name ? user.name.split(' ')[0] : 'Loading...'}
+          </p>
+          <p className="text-[11px] text-gray-500 capitalize leading-tight">
+            {user?.userType}
+          </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full border border-gray-200 bg-white">
-              <Avatar className="h-8 w-8">
+            <Button 
+              variant="ghost" 
+              className="relative h-10 w-10 rounded-full border-2 border-gray-200 bg-white hover:border-blue-500 transition-colors"
+            >
+              <Avatar className="h-9 w-9">
                 <AvatarImage src="/avatars/01.png" alt={user?.name || 'User'} />
-                <AvatarFallback className="bg-blue-500 text-white">
-                  {user?.name ? user.name.slice(0, 2).toUpperCase() : '...'}
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-medium">
+                  {user?.name ? user.name.split(' ')[0].slice(0, 2).toUpperCase() : '...'}
                 </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
+          <DropdownMenuContent className="w-80 bg-gradient-to-br from-gray-50 to-gray-100/50 border-2 border-gray-200 shadow-lg rounded-xl p-2" align="end" forceMount>
+            <div className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-200 shadow-md">
+              <Avatar className="h-16 w-16 border-2 border-blue-100">
+                <AvatarImage src="/avatars/01.png" alt={user?.name || 'User'} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-xl font-medium text-white">
+                  {user?.name ? user.name.split(' ')[0].slice(0, 2).toUpperCase() : '...'}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none text-gray-900">
+                <p className="text-lg font-semibold leading-none text-gray-900">
                   {user?.name || 'Loading...'}
                 </p>
-                <p className="text-xs leading-none text-gray-500">
+                <p className="text-sm text-gray-500">
                   {user?.email || 'Loading...'}
                 </p>
-                <p className="text-xs leading-none text-gray-500 capitalize">
-                  {user?.userType}
-                  {user?.schoolName && ` • ${user.schoolName}`}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={cn(
+                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium border-2 text-gray-900 shadow",
+                    {
+                      'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200': user?.userType === 'super-admin',
+                      'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200': user?.userType === 'principal',
+                      'bg-gradient-to-br from-green-50 to-green-100 border-green-200': user?.userType === 'teacher',
+                      'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200': user?.userType === 'student',
+                    }
+                  )}>
+                    {user?.userType}
+                  </span>
+                  {user?.schoolName && (
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 border-2 border-gray-200 shadow">
+                      {user.schoolName}
+                    </span>
+                  )}
+                </div>
               </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem className="text-gray-700 cursor-pointer hover:bg-gray-100">
-                Profile
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <DropdownMenuItem className="flex items-center gap-2 p-3 text-gray-700 cursor-pointer rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 shadow hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
+                <User className="h-4 w-4" />
+                <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-gray-700 cursor-pointer hover:bg-gray-100">
-                Settings
+              <DropdownMenuItem className="flex items-center gap-2 p-3 text-gray-700 cursor-pointer rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 shadow hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} className="text-red-600 cursor-pointer hover:bg-red-50">
-              Sign out
+            </div>
+            <DropdownMenuSeparator className="my-2 border-gray-200" />
+            <DropdownMenuItem 
+              onClick={handleSignOut} 
+              className="flex items-center gap-2 p-3 text-red-600 cursor-pointer rounded-lg bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 shadow hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sign out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
