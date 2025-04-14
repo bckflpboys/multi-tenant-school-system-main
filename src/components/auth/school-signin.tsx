@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'react-hot-toast'
+import { signIn } from 'next-auth/react'
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -68,22 +69,41 @@ export function SchoolSignIn() {
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true)
-      const response = await fetch('/api/auth/school/signin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+      
+      // Use NextAuth signIn instead of custom endpoint
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        schoolId: data.schoolId,
+        userType: data.userType,
+        redirect: false,
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to sign in')
+      if (!result?.ok) {
+        toast.error(result?.error || 'Failed to sign in')
+        return
       }
 
       toast.success('Signed in successfully')
-      router.push('/dashboard') // Or specific dashboard based on user type
+      
+      // Redirect based on user type
+      switch (data.userType) {
+        case 'principal':
+          router.push('/dashboard/schools')
+          break
+        case 'teacher':
+          router.push('/dashboard/classes')
+          break
+        case 'student':
+          router.push('/dashboard/courses')
+          break
+        default:
+          router.push('/dashboard')
+      }
+
     } catch (error) {
       console.error('Sign in error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to sign in')
+      toast.error('Failed to sign in')
     } finally {
       setLoading(false)
     }

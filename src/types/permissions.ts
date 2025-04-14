@@ -1,14 +1,57 @@
 export type UserRole = 
   | 'super_admin'      // System administrator who manages all schools
+  | 'super_admin_staff' // Super admin support staff
   | 'school_admin'     // School principal/administrator
-  | 'admin_staff'      // Administrative staff (registrar, accountant, etc.)
-  | 'head_teacher'     // Department heads or senior teachers
-  | 'teacher'          // Regular teachers
-  | 'student'          // Students
-  | 'parent'           // Parents/guardians
-  | 'librarian'        // Library staff
-  | 'counselor'        // School counselor
-  | 'nurse';           // School nurse/medical staff
+  | 'staff'           // School administrative staff
+  | 'teacher'         // Regular teachers
+  | 'student';        // Students
+
+// Define permissions for each role
+export const rolePermissions = {
+  super_admin: [
+    'manage_schools',
+    'manage_super_admin_staff',
+    'manage_system_settings',
+    'view_all_schools',
+    'view_analytics'
+  ],
+  super_admin_staff: [
+    'view_all_schools',
+    'view_analytics',
+    'support_schools'
+  ],
+  school_admin: [
+    'manage_staff',
+    'manage_teachers',
+    'manage_students',
+    'manage_classes',
+    'manage_subjects',
+    'view_school_analytics',
+    'manage_school_settings'
+  ],
+  staff: [
+    'manage_students',
+    'manage_attendance',
+    'manage_grades',
+    'view_classes',
+    'view_subjects'
+  ],
+  teacher: [
+    'manage_own_classes',
+    'manage_grades',
+    'manage_attendance',
+    'view_students',
+    'view_subjects'
+  ],
+  student: [
+    'view_own_grades',
+    'view_own_attendance',
+    'view_own_schedule',
+    'view_own_subjects'
+  ]
+} as const;
+
+export type Permission = keyof typeof rolePermissions[UserRole];
 
 export type Feature = {
   id: string;

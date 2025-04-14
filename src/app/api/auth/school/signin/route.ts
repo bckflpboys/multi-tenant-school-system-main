@@ -2,9 +2,15 @@ import { NextResponse } from "next/server"
 import { compare } from "bcryptjs"
 import { z } from "zod"
 import clientPromise from "@/lib/mongodb"
-import { Types } from "mongoose"
 import { SignJWT } from "jose"
-import { cookies } from "next/headers"
+import type { UserRole } from "@/types/permissions"
+
+// Map user types to roles
+const userTypeToRole: Record<string, UserRole> = {
+  student: 'student',
+  teacher: 'teacher',
+  principal: 'school_admin'
+}
 
 const signinSchema = z.object({
   email: z.string().email(),
@@ -16,34 +22,28 @@ const signinSchema = z.object({
 export async function POST(request: Request) {
   try {
     const json = await request.json()
+    console.log('Received signin request:', json)
+
     const body = signinSchema.parse(json)
+    console.log('Validated body:', body)
 
     const client = await clientPromise
     
-    // First verify that the school exists
-    const systemDb = client.db('system-db')
-    const schoolsCollection = systemDb.collection('schools')
-    
-    const school = await schoolsCollection.findOne({
-      _id: new Types.ObjectId(body.schoolId)
-    })
-
-    if (!school) {
-      return NextResponse.json(
-        { message: "School not found" },
-        { status: 404 }
-      )
-    }
-
-    // Get the school's database
+    // Connect directly to the school's database
     const schoolDb = client.db(`school-${body.schoolId}`)
     const usersCollection = schoolDb.collection('users')
 
-    // Find the user
+    // Map the userType to the actual role
+    const role = userTypeToRole[body.userType]
+    console.log('Checking for user with role:', role)
+
+    // Find the user with correct email and role in the school's database
     const user = await usersCollection.findOne({
       email: body.email,
-      userType: body.userType
+      role: role
     })
+
+    console.log('Found user in school database:', user)
 
     if (!user) {
       return NextResponse.json(
@@ -54,6 +54,7 @@ export async function POST(request: Request) {
 
     // Verify password
     const isValidPassword = await compare(body.password, user.password)
+    console.log('Password valid:', isValidPassword)
 
     if (!isValidPassword) {
       return NextResponse.json(
@@ -62,34 +63,45 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined')
+    }
+
     // Create session token
     const token = await new SignJWT({
       id: user._id.toString(),
       email: user.email,
-      name: user.name,
-      userType: user.userType,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
       schoolId: body.schoolId
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('24h')
       .sign(new TextEncoder().encode(process.env.JWT_SECRET))
 
-    // Set cookie
-    cookies().set('session', token, {
+    // Create response with cookie
+    const response = NextResponse.json({
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        schoolId: body.schoolId
+      }
+    })
+
+    // Set cookie in the response
+    response.cookies.set('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 // 24 hours
     })
 
-    return NextResponse.json({
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        userType: user.userType
-      }
-    })
+    return response
+
   } catch (error) {
     console.error("Error in school signin:", error)
     if (error instanceof z.ZodError) {
@@ -98,8 +110,14 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+    if (error instanceof Error && error.message === 'JWT_SECRET is not defined') {
+      return NextResponse.json(
+        { message: "Server configuration error" },
+        { status: 500 }
+      )
+    }
     return NextResponse.json(
-      { message: "Something went wrong" },
+      { message: "An error occurred during sign in" },
       { status: 500 }
     )
   }
