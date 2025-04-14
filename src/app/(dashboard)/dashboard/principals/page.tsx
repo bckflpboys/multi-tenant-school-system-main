@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { CreatePrincipalDialog } from "@/components/principals/create-principal-dialog"
+import { PrincipalsTable } from "@/components/principals/principals-table"
 
 export const metadata: Metadata = {
   title: "Principals",
@@ -21,8 +22,7 @@ export default function PrincipalsPage() {
 
       <div className="rounded-lg border bg-white shadow-sm">
         <div className="p-6">
-          {/* TODO: Add principals table/list component */}
-          <p className="text-gray-500">No principals found. Add your first principal to get started.</p>
+          <PrincipalsTable />
         </div>
       </div>
     </div>

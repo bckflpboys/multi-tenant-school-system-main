@@ -8,31 +8,32 @@ export const principalFormSchema = z.object({
     message: "Last name must be at least 2 characters.",
   }),
   email: z.string().email("Please enter a valid email address"),
-  phoneNumber: z.string().min(10, {
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
+  phoneNumber: z.union([z.string().min(10, {
     message: "Phone number must be at least 10 characters.",
-  }),
-  dateOfBirth: z.string(),
+  }), z.string().length(0)]),
+  dateOfBirth: z.string().optional(),
   gender: z.enum(["male", "female"]),
-  address: z.string().min(5, {
+  address: z.union([z.string().min(5, {
     message: "Address must be at least 5 characters.",
-  }),
-  governmentId: z.string().min(6, {
+  }), z.string().length(0)]),
+  governmentId: z.union([z.string().min(6, {
     message: "Government ID must be at least 6 characters.",
-  }),
-  employeeId: z.string().min(3, {
+  }), z.string().length(0)]),
+  employeeId: z.union([z.string().min(3, {
     message: "Employee ID must be at least 3 characters.",
-  }),
-  qualifications: z.string().min(2, {
+  }), z.string().length(0)]),
+  qualifications: z.union([z.string().min(2, {
     message: "Qualifications must be at least 2 characters.",
-  }),
-  yearsOfExperience: z.string().min(1, {
-    message: "Years of experience is required.",
-  }),
-  emergencyContact: z.string().min(10, {
+  }), z.string().length(0)]),
+  yearsOfExperience: z.string().optional(),
+  emergencyContact: z.union([z.string().min(10, {
     message: "Emergency contact must be at least 10 characters.",
-  }),
-  assignedSchool: z.string().optional(),
-  startDate: z.string(),
+  }), z.string().length(0)]),
+  assignedSchool: z.string().min(1, "Please select a school"),
+  startDate: z.string().optional(),
   contractDetails: z.string().optional(),
 })
 

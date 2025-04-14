@@ -13,6 +13,7 @@ import {
 import { PrincipalForm } from "./principal-form"
 import { Plus } from "lucide-react"
 import type { PrincipalFormValues } from "@/lib/validations/principal"
+import { toast } from "react-hot-toast"
 
 export function CreatePrincipalDialog() {
   const [open, setOpen] = useState(false)
@@ -22,11 +23,24 @@ export function CreatePrincipalDialog() {
     setIsLoading(true)
     
     try {
-      // TODO: Implement principal creation logic
-      console.log(data)
+      const response = await fetch('/api/principals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create principal')
+      }
+
+      toast.success('Principal created successfully')
       setOpen(false)
     } catch (error) {
-      console.error(error)
+      console.error('Error creating principal:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to create principal')
     } finally {
       setIsLoading(false)
     }
@@ -44,7 +58,7 @@ export function CreatePrincipalDialog() {
         <DialogHeader>
           <DialogTitle className="text-2xl">Add New Principal</DialogTitle>
           <DialogDescription>
-            Fill in the principal information below. All fields marked with * are required.
+            Fill in the principal information below. Fields marked with * are required.
           </DialogDescription>
         </DialogHeader>
         <PrincipalForm onSubmit={onSubmit} isLoading={isLoading} />
