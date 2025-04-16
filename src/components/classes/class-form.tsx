@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { classFormSchema, type ClassFormValues } from "@/lib/validations/class"
+import { X } from "lucide-react"
 
 interface ClassFormProps {
   initialData?: ClassFormValues
@@ -25,12 +26,24 @@ export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) 
     resolver: zodResolver(classFormSchema),
     defaultValues: initialData ?? {
       name: "",
-      teacher: "",
+      teachers: [""],
       grade: "",
       academicYear: "",
       capacity: undefined,
     },
   })
+
+  const addTeacher = () => {
+    const currentTeachers = form.getValues("teachers")
+    form.setValue("teachers", [...currentTeachers, ""])
+  }
+
+  const removeTeacher = (index: number) => {
+    const currentTeachers = form.getValues("teachers")
+    if (currentTeachers.length > 1) {
+      form.setValue("teachers", currentTeachers.filter((_, i) => i !== index))
+    }
+  }
 
   return (
     <Form {...form}>
@@ -52,23 +65,54 @@ export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) 
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="teacher"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-gray-700">Teacher</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter teacher's name"
-                  className="h-11"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage className="text-red-500" />
-            </FormItem>
-          )}
-        />
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <FormLabel className="text-gray-700">Teachers</FormLabel>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addTeacher}
+              className="h-8"
+            >
+              Add Teacher
+            </Button>
+          </div>
+          
+          {form.watch("teachers").map((_, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <FormField
+                control={form.control}
+                name={`teachers.${index}`}
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input
+                        placeholder="Enter teacher's name"
+                        className="h-11"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
+              {form.watch("teachers").length > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeTeacher(index)}
+                  className="h-11 w-11"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+
         <FormField
           control={form.control}
           name="grade"
@@ -110,23 +154,21 @@ export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) 
             <FormItem>
               <FormLabel className="text-gray-700">Class Capacity</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
-                  placeholder="Maximum number of students" 
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                <Input
+                  type="number"
+                  placeholder="Enter maximum number of students"
                   className="h-11"
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : '')}
                 />
               </FormControl>
               <FormMessage className="text-red-500" />
             </FormItem>
           )}
         />
-        <div className="flex justify-end pt-4">
-          <Button type="submit" disabled={isLoading} className="min-w-[120px]">
-            {isLoading ? "Creating..." : "Create Class"}
-          </Button>
-        </div>
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Class"}
+        </Button>
       </form>
     </Form>
   )

@@ -12,8 +12,14 @@ interface SchoolDoc extends Omit<z.infer<typeof schoolApiSchema>, '_id'> {
 }
 
 // Define the response type
-interface SchoolResponse extends Omit<SchoolDoc, '_id'> {
+interface SchoolResponse {
   _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
   stats: {
     users: number;
     classes: number;
@@ -26,31 +32,18 @@ export async function GET(
   context: { params: { id: string } }
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = context.params;
 
-    if (!Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { message: "Invalid school ID" },
-        { status: 400 }
-      );
-    }
-
-    console.log('Fetching school with ID:', id);
-    console.log('Converted ObjectId:', new Types.ObjectId(id));
-
-    // Connect to MongoDB
+    // Get the client
     const client = await clientPromise;
-    
-    // Get school info from system-db first
-    const systemDb = client.db('system-db');
+    const systemDb = client.db();
+
+    // Get the schools collection with type
     const schoolsCollection = systemDb.collection<SchoolDoc>('schools');
     
-    // Try both ObjectId and string matching
+    // Try to find school by ObjectId
     const school = await schoolsCollection.findOne({
-      $or: [
-        { _id: new Types.ObjectId(id) },
-        { _id: id }
-      ]
+      _id: new Types.ObjectId(id)
     });
 
     console.log('Found school:', school); // Debug log
@@ -62,47 +55,37 @@ export async function GET(
       );
     }
 
-    // Get stats from school's database
+    // Get stats from the school's database
     const schoolDb = client.db(`school-${id}`);
-    
-    try {
-      // Get counts of various collections
-      const [usersCount, classesCount, subjectsCount] = await Promise.all([
-        schoolDb.collection('users').countDocuments(),
-        schoolDb.collection('classes').countDocuments(),
-        schoolDb.collection('subjects').countDocuments()
-      ]);
 
-      const schoolWithStats: SchoolResponse = {
-        ...school,
-        _id: school._id.toString(),
-        stats: {
-          users: usersCount,
-          classes: classesCount,
-          subjects: subjectsCount
-        }
-      };
+    // Get counts from collections
+    const [usersCount, classesCount, subjectsCount] = await Promise.all([
+      schoolDb.collection('users').countDocuments(),
+      schoolDb.collection('classes').countDocuments(),
+      schoolDb.collection('subjects').countDocuments()
+    ]);
 
-      return NextResponse.json({ school: schoolWithStats });
-    } catch (statsError) {
-      console.error('Error fetching school stats:', statsError);
-      // Return school data without stats if we can't get them
-      const schoolWithoutStats: SchoolResponse = {
-        ...school,
-        _id: school._id.toString(),
-        stats: {
-          users: 0,
-          classes: 0,
-          subjects: 0
-        }
-      };
+    // Convert MongoDB document to response format
+    const response: SchoolResponse = {
+      _id: school._id.toString(),
+      name: school.name,
+      email: school.email,
+      phone: school.phone,
+      address: school.address,
+      createdAt: school.createdAt.toISOString(),
+      updatedAt: school.updatedAt.toISOString(),
+      stats: {
+        users: usersCount,
+        classes: classesCount,
+        subjects: subjectsCount
+      }
+    };
 
-      return NextResponse.json({ school: schoolWithoutStats });
-    }
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching school:", error);
+    console.error('Error in GET /api/schools/[id]:', error);
     return NextResponse.json(
-      { message: "Something went wrong", error: error instanceof Error ? error.message : String(error) },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
