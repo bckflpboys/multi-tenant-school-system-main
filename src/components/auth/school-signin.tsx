@@ -55,9 +55,24 @@ export function SchoolSignIn() {
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        const response = await fetch('/api/schools')
+        const response = await fetch('/api/schools', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
         const data = await response.json()
-        setSchools(data.schools)
+        if (Array.isArray(data.schools)) {
+          setSchools(data.schools)
+        } else {
+          console.error('Unexpected data format:', data)
+          toast.error('Invalid data format received from server')
+        }
       } catch (error) {
         console.error('Error fetching schools:', error)
         toast.error('Failed to load schools')
@@ -70,13 +85,13 @@ export function SchoolSignIn() {
     try {
       setLoading(true)
       
-      // Use NextAuth signIn instead of custom endpoint
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
         schoolId: data.schoolId,
         userType: data.userType,
         redirect: false,
+        callbackUrl: '/dashboard'
       })
 
       if (!result?.ok) {

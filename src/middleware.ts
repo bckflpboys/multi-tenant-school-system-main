@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-import { jwtVerify } from 'jose'
+import { getToken } from 'next-auth/jwt'
 import type { UserRole } from './types/permissions'
+import type { NextRequest } from 'next/server'
+import type { GetTokenParams } from 'next-auth/jwt'
 
 // Define route access by role
 const roleRouteAccess: Record<UserRole, string[]> = {
@@ -12,6 +14,7 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/students',
     '/dashboard/classes',
     '/dashboard/subjects',
+    '/dashboard/parents',
     '/dashboard/settings'
   ],
   staff: [
@@ -36,40 +39,42 @@ const roleRouteAccess: Record<UserRole, string[]> = {
   ]
 }
 
-export async function middleware(request: Request) {
+export async function middleware(request: NextRequest) {
   try {
-    // Get the session token from cookies
-    const sessionCookie = request.headers.get('cookie')?.split('; ').find(row => row.startsWith('session='))
-    
-    if (!sessionCookie) {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET
+    } as GetTokenParams)
+
+    if (!token) {
       return redirectToLogin(request)
     }
 
-    const token = sessionCookie.split('=')[1]
-    
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET is not defined')
-    }
-
-    // Verify and decode the token
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(process.env.JWT_SECRET)
-    )
-
-    const role = payload.role as UserRole
+    const role = token.role as UserRole
     const path = new URL(request.url).pathname
 
+    // Super admin can access all routes except school-specific ones
+    if (role === 'super_admin') {
+      // If trying to access school-specific routes, redirect to dashboard
+      if (path.startsWith('/dashboard/classes') || 
+          path.startsWith('/dashboard/students') ||
+          path.startsWith('/dashboard/grades')) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      return NextResponse.next()
+    }
+
     // Check if user has access to this route
-    const hasAccess = roleRouteAccess[role].some(route => {
+    const hasAccess = roleRouteAccess[role]?.some(route => {
       const pattern = new RegExp('^' + route.replace('*', '.*') + '$')
       return pattern.test(path)
     })
 
     if (!hasAccess) {
       // Redirect to appropriate dashboard based on role
-      switch (role) {
+      switch (role as UserRole) {
         case 'super_admin':
+          return NextResponse.redirect(new URL('/dashboard', request.url))
         case 'super_admin_staff':
           return NextResponse.redirect(new URL('/dashboard', request.url))
         case 'school_admin':
@@ -92,8 +97,10 @@ export async function middleware(request: Request) {
   }
 }
 
-function redirectToLogin(request: Request) {
-  const url = new URL('/auth/school/signin', request.url)
+function redirectToLogin(request: NextRequest) {
+  const isAdminRoute = request.url.includes('/super-admin')
+  const signInUrl = isAdminRoute ? '/auth/super-admin/signin' : '/auth/school/signin'
+  const url = new URL(signInUrl, request.url)
   url.searchParams.set('callbackUrl', new URL(request.url).pathname)
   return NextResponse.redirect(url)
 }
@@ -101,6 +108,7 @@ function redirectToLogin(request: Request) {
 export const config = {
   matcher: [
     '/dashboard/:path*',
-    '/api/dashboard/:path*',
-  ],
+    '/api/schools/:schoolId/:path*',  // Only protect school-specific routes
+    '/api/users/:path*'
+  ]
 }

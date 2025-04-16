@@ -41,16 +41,9 @@ export function SuperAdminAuthForm({ mode }: SuperAdminAuthFormProps) {
 
   async function onSubmit(data: SuperAdminSignInSchema | SuperAdminSignUpSchema) {
     setIsLoading(true)
-    console.log("Form submitted:", { email: data.email, mode });
 
     try {
       if (mode === "signup") {
-        console.log("Sending signup data:", {
-          name: (data as SuperAdminSignUpSchema).name,
-          email: data.email,
-          // Don't log password in production
-        });
-
         const response = await fetch("/api/auth/super-admin/signup", {
           method: "POST",
           headers: {
@@ -64,7 +57,6 @@ export function SuperAdminAuthForm({ mode }: SuperAdminAuthFormProps) {
         })
 
         const responseData = await response.json()
-        console.log("Signup response:", responseData);
 
         if (!response.ok) {
           throw new Error(responseData.message || "Something went wrong")
@@ -74,22 +66,22 @@ export function SuperAdminAuthForm({ mode }: SuperAdminAuthFormProps) {
       }
 
       // Sign in after successful signup or when in signin mode
-      console.log("Attempting to sign in...");
       const signInResult = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
+        callbackUrl: "/dashboard"
       });
-      
-      console.log("Sign in result:", signInResult);
 
       if (signInResult?.error) {
         throw new Error(signInResult.error)
       }
 
-      toast.success("Logged in successfully!")
-      router.push("/dashboard")
-      router.refresh()
+      if (signInResult?.ok) {
+        toast.success("Logged in successfully!")
+        router.push("/dashboard")
+        router.refresh()
+      }
     } catch (error) {
       console.error("Auth error:", error);
       toast.error(error instanceof Error ? error.message : "Something went wrong")

@@ -40,7 +40,8 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/auth/login",
+    signIn: "/auth/school/signin", // Default sign-in page
+    error: "/auth/error",
   },
   providers: [
     CredentialsProvider({
@@ -81,7 +82,9 @@ export const authOptions: AuthOptions = {
               id: user._id.toString(),
               name: user.name,
               email: user.email,
-              role: user.role
+              role: 'super_admin',
+              schoolId: 'system',
+              schoolName: 'System'
             } as User
           } else {
             // Handle school user auth
@@ -130,27 +133,21 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        return {
-          ...token,
-          id: user.id,
-          role: user.role,
-          schoolId: user.schoolId,
-          schoolName: user.schoolName
-        }
+        token.id = user.id
+        token.role = user.role
+        token.schoolId = user.schoolId
+        token.schoolName = user.schoolName
       }
       return token
     },
     async session({ session, token }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.id,
-          role: token.role,
-          schoolId: token.schoolId,
-          schoolName: token.schoolName
-        },
+      if (session.user) {
+        session.user.id = token.id as string
+        session.user.role = token.role as string
+        session.user.schoolId = token.schoolId as string
+        session.user.schoolName = token.schoolName as string | undefined
       }
-    },
+      return session
+    }
   },
 }
