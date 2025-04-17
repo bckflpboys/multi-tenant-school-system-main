@@ -10,23 +10,54 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { StudentForm } from "./student-form"
 import { Plus } from "lucide-react"
-import type { StudentFormValues } from "@/lib/validations/student"
+import { StudentForm } from "./student-form"
+import { type StudentFormValues } from "@/lib/validations/student"
+import { useSession } from "next-auth/react"
+import { toast } from "react-hot-toast"
+import { useRouter } from "next/navigation"
 
 export function CreateStudentDialog() {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { data: session } = useSession()
+  const router = useRouter()
 
   const onSubmit = async (data: StudentFormValues) => {
-    setIsLoading(true)
-    
+    if (!session?.user?.schoolId) {
+      toast.error("No school ID found")
+      return
+    }
+
     try {
-      // TODO: Implement student creation logic
-      console.log(data)
+      setIsLoading(true)
+      console.log('Creating student with data:', data)
+
+      const response = await fetch(`/api/students`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          schoolId: session.user.schoolId
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create student')
+      }
+
+      const result = await response.json()
+      console.log('Created student:', result)
+
+      toast.success("Student created successfully")
       setOpen(false)
+      router.refresh()
     } catch (error) {
-      console.error(error)
+      console.error("Error creating student:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to create student")
     } finally {
       setIsLoading(false)
     }
@@ -40,11 +71,11 @@ export function CreateStudentDialog() {
           Add Student
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Add New Student</DialogTitle>
+          <DialogTitle>Add New Student</DialogTitle>
           <DialogDescription>
-            Fill in the student information below. All fields marked with * are required.
+            Add a new student to your school. Fill in the required information below.
           </DialogDescription>
         </DialogHeader>
         <StudentForm onSubmit={onSubmit} isLoading={isLoading} />

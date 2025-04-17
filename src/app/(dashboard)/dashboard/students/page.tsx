@@ -1,9 +1,10 @@
 import { Metadata } from "next"
 import { CreateStudentDialog } from "@/components/students/create-student-dialog"
+import { StudentList } from "@/components/students/student-list"
 
 export const metadata: Metadata = {
   title: "Students",
-  description: "Manage your students",
+  description: "Manage students in your school.",
 }
 
 export default function StudentsPage() {
@@ -13,16 +14,15 @@ export default function StudentsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">Students</h1>
           <p className="mt-1 text-gray-500">
-            Manage and view all students in your school
+            Manage and organize your school students
           </p>
         </div>
         <CreateStudentDialog />
       </div>
 
-      <div className="rounded-lg border bg-white shadow-sm">
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
         <div className="p-6">
-          {/* TODO: Add student table/list component */}
-          <p className="text-gray-500">No students found. Add your first student to get started.</p>
+          <StudentList />
         </div>
       </div>
     </div>
