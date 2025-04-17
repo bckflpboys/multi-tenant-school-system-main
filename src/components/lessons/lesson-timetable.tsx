@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { Card } from "@/components/ui/card"
 import {
@@ -10,8 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2 } from "lucide-react"
+import { Loader2, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { jsPDF } from "jspdf"
+import html2canvas from "html2canvas"
 
 interface Class {
   _id: string
@@ -75,6 +77,125 @@ export function LessonTimetable() {
   const [subjects, setSubjects] = useState<{ [key: string]: Subject }>({})
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingClasses, setIsLoadingClasses] = useState(true)
+  const timetableRef = useRef<HTMLDivElement>(null)
+
+  const handleDownload = async () => {
+    if (!timetableRef.current) return
+
+    const selectedClassItem = classes.find(c => c._id === selectedClass)
+    const filename = `timetable-${selectedClassItem?.name || 'class'}-${new Date().toISOString().split('T')[0]}.pdf`
+
+    try {
+      // Create a clone of the timetable for PDF generation
+      const clone = timetableRef.current.cloneNode(true) as HTMLElement
+      clone.style.position = 'absolute'
+      clone.style.left = '-9999px'
+      document.body.appendChild(clone)
+
+      // Replace Tailwind classes with inline styles
+      const elements = clone.getElementsByTagName('*')
+      for (let i = 0; i < elements.length; i++) {
+        const el = elements[i] as HTMLElement
+        
+        // Remove all Tailwind classes that might use oklch
+        el.classList.remove(
+          'bg-gray-100', 'text-gray-900', 'text-gray-600', 'text-gray-500', 
+          'text-gray-400', 'bg-purple-50', 'border-purple-200'
+        )
+
+        // Apply basic styles
+        el.style.fontFamily = 'Arial, sans-serif'
+        el.style.color = '#000000'
+        
+        if (el.tagName === 'BUTTON') {
+          el.style.backgroundColor = '#ffffff'
+          el.style.border = '1px solid #000000'
+        }
+
+        // Style time slots and empty cells with light grey borders
+        if (el.classList.contains('border-gray-200')) {
+          el.style.border = '1px solid #dddddd'
+          el.style.backgroundColor = '#ffffff'
+        }
+
+        // Style lesson blocks with dark borders
+        if (el.classList.contains('absolute')) {
+          el.style.backgroundColor = '#ffffff'
+          el.style.border = '1.5px solid #000000'
+          
+          // Find and style the subject code div
+          const subjectCodeDiv = el.querySelector('.font-medium')
+          if (subjectCodeDiv) {
+            subjectCodeDiv.classList.remove('font-medium')
+            ;(subjectCodeDiv as HTMLElement).style.fontWeight = '500'
+            ;(subjectCodeDiv as HTMLElement).style.border = 'none'
+            ;(subjectCodeDiv as HTMLElement).style.backgroundColor = 'transparent'
+          }
+        }
+
+        // Style headers with dark borders
+        if (el.classList.contains('font-medium') && !el.closest('.absolute')) {
+          el.style.fontWeight = '500'
+          el.style.backgroundColor = '#ffffff'
+          el.style.border = '1px solid #000000'
+        }
+      }
+
+      // Set fixed dimensions for better PDF rendering
+      clone.style.width = '1200px'
+      clone.style.minHeight = '1600px'
+      clone.style.padding = '20px'
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        removeContainer: true,
+        windowWidth: 1200,
+        windowHeight: 1600
+      })
+
+      // Remove the clone after capturing
+      document.body.removeChild(clone)
+      
+      const imgData = canvas.toDataURL('image/jpeg', 1.0)
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [1600, 1200] // Custom larger format
+      })
+
+      // Calculate dimensions to fit the entire timetable
+      const imgProps = pdf.getImageProperties(imgData)
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+      
+      // Add multiple pages if needed
+      const aspectRatio = imgProps.width / imgProps.height
+      const totalHeight = pdfWidth / aspectRatio
+      const pageCount = Math.ceil(totalHeight / pdfHeight)
+
+      for (let i = 0; i < pageCount; i++) {
+        if (i > 0) {
+          pdf.addPage()
+        }
+
+        pdf.addImage(
+          imgData,
+          'JPEG',
+          0,
+          -i * pdfHeight, // Offset for each page
+          pdfWidth,
+          totalHeight
+        )
+      }
+
+      pdf.save(filename)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+    }
+  }
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -283,6 +404,15 @@ export function LessonTimetable() {
             >
               Day View
             </Button>
+            <Button
+              variant="outline"
+              onClick={handleDownload}
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download PDF
+            </Button>
           </div>
         )}
       </div>
@@ -303,7 +433,7 @@ export function LessonTimetable() {
       )}
 
       {selectedClass && (
-        <Card className="p-4">
+        <Card className="p-4" ref={timetableRef}>
           {selectedView === "week" ? (
             renderTimetableGrid(daysOfWeek.slice(0, 5))
           ) : (
