@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { CreateTeacherDialog } from "@/components/teachers/create-teacher-dialog"
+import { TeacherList } from "@/components/teachers/teacher-list"
 
 export const metadata: Metadata = {
   title: "Teachers",
@@ -8,15 +9,22 @@ export const metadata: Metadata = {
 
 export default function TeachersPage() {
   return (
-    <div className="flex flex-col gap-4 p-8">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto py-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Teachers</h1>
-          <p className="text-sm text-gray-500">Manage teachers in your school.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Teachers</h1>
+          <p className="mt-1 text-gray-500">
+            Manage and organize your school teachers
+          </p>
         </div>
         <CreateTeacherDialog />
       </div>
-      {/* Teachers table will go here */}
+
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6">
+          <TeacherList />
+        </div>
+      </div>
     </div>
   )
 }
