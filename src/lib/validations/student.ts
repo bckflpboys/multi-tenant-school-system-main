@@ -9,7 +9,10 @@ export const studentFormSchema = z.object({
   }),
   dateOfBirth: z.string(),
   gender: z.enum(["male", "female"]),
-  email: z.string().email("Please enter a valid email address").optional(),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
   phoneNumber: z.string().optional(),
   studentAddress: z.string().optional(),
   grade: z.string(),
