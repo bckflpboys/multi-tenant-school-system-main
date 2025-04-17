@@ -15,6 +15,7 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/classes',
     '/dashboard/subjects',
     '/dashboard/parents',
+    '/dashboard/examinations',
     '/dashboard/settings'
   ],
   staff: [

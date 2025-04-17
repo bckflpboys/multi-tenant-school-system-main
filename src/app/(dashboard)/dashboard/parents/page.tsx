@@ -1,22 +1,30 @@
 import { Metadata } from "next"
 import { CreateParentDialog } from "@/components/parents/create-parent-dialog"
+import { ParentList } from "@/components/parents/parent-list"
 
 export const metadata: Metadata = {
   title: "Parents",
-  description: "Manage parents and guardians in your school.",
+  description: "Manage parents in your school.",
 }
 
 export default function ParentsPage() {
   return (
-    <div className="flex flex-col gap-4 p-8">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto py-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Parents</h1>
-          <p className="text-sm text-gray-500">Manage parents and guardians in your school.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Parents</h1>
+          <p className="mt-1 text-gray-500">
+            Manage and organize your school parents
+          </p>
         </div>
         <CreateParentDialog />
       </div>
-      {/* Parents table will go here */}
+
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6">
+          <ParentList />
+        </div>
+      </div>
     </div>
   )
 }
