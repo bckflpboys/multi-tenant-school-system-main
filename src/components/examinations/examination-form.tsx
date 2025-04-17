@@ -11,6 +11,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { examinationFormSchema, type ExaminationFormValues } from "@/lib/validations/examination"
@@ -29,20 +36,25 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
     defaultValues: initialData ?? {
       title: "",
       code: "",
+      type: "exam",
       description: "",
       subject: "",
       gradeLevel: "",
       examDate: "",
       startTime: "",
-      duration: 0,
-      totalMarks: 0,
-      passingMarks: 0,
+      endDate: "",
+      duration: 60,
+      totalMarks: 100,
+      passingMarks: 50,
       venue: "",
       examinerId: "",
       supervisors: [],
       instructions: "",
     },
   })
+
+  const type = form.watch("type")
+  const isAssignment = type === "assignment"
 
   return (
     <Form {...form}>
@@ -115,6 +127,29 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
 
             <FormField
               control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700">Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-white border-gray-300 h-11 text-gray-900">
+                        <SelectValue placeholder="Select type" className="text-gray-900" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="exam" className="text-gray-900">Exam</SelectItem>
+                      <SelectItem value="test" className="text-gray-900">Test</SelectItem>
+                      <SelectItem value="assignment" className="text-gray-900">Assignment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
@@ -175,79 +210,91 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
             <CardTitle className="text-lg font-medium text-gray-900">Schedule & Location</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-4">
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="examDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Exam Date</FormLabel>
+                    <FormLabel className="text-gray-700">{isAssignment ? 'Start Date' : 'Exam Date'}</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="date"
-                        {...field}
-                        className="h-11 border-gray-300 focus:border-gray-400"
-                      />
+                      <Input type="date" {...field} className="h-11 border-gray-300 focus:border-gray-400" />
                     </FormControl>
                     <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">Start Time</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="time"
-                        {...field}
-                        className="h-11 border-gray-300 focus:border-gray-400"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">Duration (minutes)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number"
-                        placeholder="Enter duration in minutes" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
-                        className="h-11 border-gray-300 focus:border-gray-400"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="venue"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Venue</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter examination venue" 
-                      {...field}
-                      className="h-11 border-gray-300 focus:border-gray-400"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500" />
-                </FormItem>
+              {isAssignment ? (
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700">Due Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} className="h-11 border-gray-300 focus:border-gray-400" />
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700">Start Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} className="h-11 border-gray-300 focus:border-gray-400" />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700">Duration (minutes)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            onChange={e => field.onChange(parseInt(e.target.value))}
+                            className="h-11 border-gray-300 focus:border-gray-400"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                </>
               )}
-            />
+
+              {!isAssignment && (
+                <FormField
+                  control={form.control}
+                  name="venue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700">Venue</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Enter venue" 
+                          {...field} 
+                          className="h-11 border-gray-300 focus:border-gray-400"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -265,10 +312,9 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
                     <FormLabel className="text-gray-700">Total Marks</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number"
-                        placeholder="Enter total marks" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(parseInt(e.target.value))}
                         className="h-11 border-gray-300 focus:border-gray-400"
                       />
                     </FormControl>
@@ -284,10 +330,9 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
                     <FormLabel className="text-gray-700">Passing Marks</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number"
-                        placeholder="Enter passing marks" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
+                        type="number" 
+                        {...field} 
+                        onChange={e => field.onChange(parseInt(e.target.value))}
                         className="h-11 border-gray-300 focus:border-gray-400"
                       />
                     </FormControl>
@@ -303,7 +348,7 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
                 name="examinerId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Examiner</FormLabel>
+                    <FormLabel className="text-gray-700">Examiner ID</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="Enter examiner ID" 

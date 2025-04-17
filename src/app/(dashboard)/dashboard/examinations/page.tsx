@@ -1,22 +1,30 @@
 import { Metadata } from "next"
 import { CreateExaminationDialog } from "@/components/examinations/create-examination-dialog"
+import { ExaminationList } from "@/components/examinations/examination-list"
 
 export const metadata: Metadata = {
   title: "Examinations",
-  description: "Manage examinations and assessments in your school.",
+  description: "Manage examinations in your school.",
 }
 
 export default function ExaminationsPage() {
   return (
-    <div className="flex flex-col gap-4 p-8">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto py-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Examinations</h1>
-          <p className="text-sm text-gray-500">Manage examinations and assessments in your school.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Examinations</h1>
+          <p className="mt-1 text-gray-500">
+            Manage and organize your school examinations
+          </p>
         </div>
         <CreateExaminationDialog />
       </div>
-      {/* Examinations table will go here */}
+
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6">
+          <ExaminationList />
+        </div>
+      </div>
     </div>
   )
 }
