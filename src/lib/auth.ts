@@ -5,6 +5,7 @@ import { getUserModel, IUser } from "@/models/user"
 import { Model } from "mongoose"
 import { User } from "next-auth"
 import clientPromise from "@/lib/mongodb"
+import { ObjectId } from "mongodb"
 
 declare module "next-auth" {
   interface User {
@@ -28,6 +29,14 @@ interface Credentials {
   password: string;
   schoolId?: string;
   userType?: string;
+}
+
+// Map user types to collections and roles
+const userTypeConfig: Record<string, { collection: string, role: string }> = {
+  student: { collection: 'students', role: 'student' },
+  teacher: { collection: 'teachers', role: 'teacher' },
+  staff: { collection: 'staff', role: 'staff' },
+  principal: { collection: 'users', role: 'school_admin' }
 }
 
 if (!process.env.NEXTAUTH_SECRET) {
@@ -88,14 +97,22 @@ export const authOptions: AuthOptions = {
             } as User
           } else {
             // Handle school user auth
+            if (!credentials.schoolId || !credentials.userType) {
+              throw new Error("School ID and user type are required")
+            }
+
+            const config = userTypeConfig[credentials.userType]
+            if (!config) {
+              throw new Error("Invalid user type")
+            }
+
             const client = await clientPromise
             const schoolDb = client.db(`school-${credentials.schoolId}`)
-            const usersCollection = schoolDb.collection('users')
+            const collection = schoolDb.collection(config.collection)
 
-            const user = await usersCollection.findOne({
-              email: credentials.email,
-              role: credentials.userType === 'principal' ? 'school_admin' : credentials.userType
-            })
+            // Find user by email
+            const user = await collection.findOne({ email: credentials.email })
+            console.log('Found user:', user ? 'Yes' : 'No', 'in collection:', config.collection)
 
             if (!user) {
               throw new Error("Invalid credentials")
@@ -112,19 +129,26 @@ export const authOptions: AuthOptions = {
 
             // Get school name from system-db
             const systemDb = client.db('system-db')
-            const school = await systemDb.collection('schools').findOne({ _id: user.schoolId })
+            let schoolObjectId;
+            try {
+              schoolObjectId = new ObjectId(credentials.schoolId);
+            } catch (error) {
+              console.error('Invalid school ID format:', error);
+              return null; // Return null if we can't create a valid ObjectId
+            }
+            const school = await systemDb.collection('schools').findOne({ _id: schoolObjectId })
 
             return {
               id: user._id.toString(),
               name: `${user.firstName} ${user.lastName}`,
               email: user.email,
-              role: user.role,
+              role: config.role,
               schoolId: credentials.schoolId,
               schoolName: school?.name || 'Unknown School'
             } as User
           }
         } catch (error) {
-          console.error("Auth error:", error)
+          console.error('Auth error:', error)
           return null
         }
       },

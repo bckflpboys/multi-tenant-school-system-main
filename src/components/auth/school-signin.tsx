@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'react-hot-toast'
 import { signIn } from 'next-auth/react'
+import { Eye, EyeOff } from 'lucide-react'
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -40,6 +41,7 @@ export function SchoolSignIn() {
   const router = useRouter()
   const [schools, setSchools] = useState<Array<{ _id: string; name: string }>>([])
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -197,9 +199,28 @@ export function SchoolSignIn() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="Enter your password" {...field} />
-                </FormControl>
+                <div className="relative">
+                  <FormControl>
+                    <Input 
+                      type={showPassword ? "text" : "password"} 
+                      placeholder="Enter your password" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-500" />
+                    )}
+                  </Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}

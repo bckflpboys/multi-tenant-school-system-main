@@ -5,18 +5,19 @@ import clientPromise from "@/lib/mongodb"
 import { SignJWT } from "jose"
 import type { UserRole } from "@/types/permissions"
 
-// Map user types to roles
-const userTypeToRole: Record<string, UserRole> = {
-  student: 'student',
-  teacher: 'teacher',
-  principal: 'school_admin'
+// Map user types to collections and roles
+const userTypeConfig: Record<string, { collection: string, role: UserRole }> = {
+  student: { collection: 'students', role: 'student' },
+  teacher: { collection: 'teachers', role: 'teacher' },
+  staff: { collection: 'staff', role: 'staff' },
+  principal: { collection: 'users', role: 'school_admin' }
 }
 
 const signinSchema = z.object({
   email: z.string().email(),
   password: z.string(),
   schoolId: z.string(),
-  userType: z.enum(['student', 'teacher', 'principal']),
+  userType: z.enum(['student', 'teacher', 'staff', 'principal']),
 })
 
 export async function POST(request: Request) {
@@ -28,22 +29,30 @@ export async function POST(request: Request) {
     console.log('Validated body:', body)
 
     const client = await clientPromise
-    
-    // Connect directly to the school's database
     const schoolDb = client.db(`school-${body.schoolId}`)
-    const usersCollection = schoolDb.collection('users')
 
-    // Map the userType to the actual role
-    const role = userTypeToRole[body.userType]
-    console.log('Checking for user with role:', role)
+    // Get the collection and role based on user type
+    const config = userTypeConfig[body.userType]
+    console.log('Using config:', config)
 
-    // Find the user with correct email and role in the school's database
-    const user = await usersCollection.findOne({
-      email: body.email,
-      role: role
-    })
+    if (!config) {
+      return NextResponse.json(
+        { message: "Invalid user type" },
+        { status: 400 }
+      )
+    }
 
-    console.log('Found user in school database:', user)
+    // Use the appropriate collection based on user type
+    const collection = schoolDb.collection(config.collection)
+
+    // Find the user with correct email
+    // For principal/admin, we also check role. For others, role is implicit by collection
+    const query = body.userType === 'principal' 
+      ? { email: body.email, role: config.role }
+      : { email: body.email }
+
+    const user = await collection.findOne(query)
+    console.log('Found user:', user ? 'Yes' : 'No')
 
     if (!user) {
       return NextResponse.json(
@@ -73,7 +82,7 @@ export async function POST(request: Request) {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role,
+      role: config.role, // Use the role from config
       schoolId: body.schoolId
     })
       .setProtectedHeader({ alg: 'HS256' })
@@ -87,7 +96,7 @@ export async function POST(request: Request) {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role,
+        role: config.role, // Use the role from config
         schoolId: body.schoolId
       }
     })
@@ -103,21 +112,17 @@ export async function POST(request: Request) {
     return response
 
   } catch (error) {
-    console.error("Error in school signin:", error)
+    console.error('Signin error:', error)
+    
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: "Invalid request data", errors: error.errors },
+        { message: "Invalid request data", details: error.errors },
         { status: 400 }
       )
     }
-    if (error instanceof Error && error.message === 'JWT_SECRET is not defined') {
-      return NextResponse.json(
-        { message: "Server configuration error" },
-        { status: 500 }
-      )
-    }
+
     return NextResponse.json(
-      { message: "An error occurred during sign in" },
+      { message: "An error occurred during signin" },
       { status: 500 }
     )
   }
