@@ -1,4 +1,3 @@
-
 import { Metadata } from "next"
 import { CreateClassDialog } from "@/components/classes/create-class-dialog"
 import { ClassList } from "@/components/classes/class-list"
@@ -21,8 +20,10 @@ export default function ClassesPage() {
         <CreateClassDialog />
       </div>
 
-      <div className="mt-8">
-        <ClassList />
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6">
+          <ClassList />
+        </div>
       </div>
     </div>
   )

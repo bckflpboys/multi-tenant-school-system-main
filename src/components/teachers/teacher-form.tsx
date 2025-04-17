@@ -1,7 +1,9 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -22,6 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { teacherFormSchema, type TeacherFormValues } from "@/lib/validations/teacher"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { X } from "lucide-react"
 
 interface TeacherFormProps {
   initialData?: TeacherFormValues
@@ -30,6 +33,10 @@ interface TeacherFormProps {
 }
 
 export function TeacherForm({ initialData, onSubmit, isLoading }: TeacherFormProps) {
+  const { data: session } = useSession()
+  const [schoolSubjects, setSchoolSubjects] = useState<{ id: string; name: string; }[]>([])
+  const [isLoadingSubjects, setIsLoadingSubjects] = useState(true)
+
   const form = useForm<TeacherFormValues>({
     resolver: zodResolver(teacherFormSchema),
     defaultValues: initialData ?? {
@@ -42,12 +49,76 @@ export function TeacherForm({ initialData, onSubmit, isLoading }: TeacherFormPro
       address: "",
       teacherId: "",
       governmentId: "",
-      subjects: [],
+      subjects: [""],
       qualifications: "",
       emergencyContact: "",
       medicalInfo: "",
     },
   })
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      setIsLoadingSubjects(true)
+
+      if (!session?.user?.schoolId) {
+        console.error('No school ID in session')
+        setIsLoadingSubjects(false)
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/schools/${session.user.schoolId}/subjects`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store', // Prevent caching
+          credentials: 'include'
+        })
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Response not OK:', response.status, errorText);
+          throw new Error(`Failed to fetch subjects: ${response.status}`);
+        }
+        
+        const data = await response.json()
+        if (!Array.isArray(data)) {
+          console.error('Invalid subjects data received:', data)
+          throw new Error('Invalid subjects data received')
+        }
+        
+        const formattedSubjects = data.map(subject => ({
+          id: subject._id,
+          name: subject.name
+        }))
+        
+        setSchoolSubjects(formattedSubjects)
+      } catch (error) {
+        console.error('Error fetching subjects:', error)
+        setSchoolSubjects([])
+      } finally {
+        setIsLoadingSubjects(false)
+      }
+    }
+
+    if (session?.user?.schoolId) {
+      fetchSubjects()
+    }
+  }, [session])
+
+  const addSubject = () => {
+    const currentSubjects = form.getValues("subjects")
+    form.setValue("subjects", [...currentSubjects, ""])
+  }
+
+  const removeSubject = (index: number) => {
+    const currentSubjects = form.getValues("subjects")
+    if (currentSubjects.length > 1) {
+      form.setValue("subjects", currentSubjects.filter((_, i) => i !== index))
+    }
+  }
 
   return (
     <Form {...form}>
@@ -250,24 +321,68 @@ export function TeacherForm({ initialData, onSubmit, isLoading }: TeacherFormPro
             <CardTitle className="text-lg font-medium text-gray-900">Professional Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-4">
-            <FormField
-              control={form.control}
-              name="subjects"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Subjects</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter subjects (comma separated)" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))}
-                      className="h-11 border-gray-300 focus:border-gray-400"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500" />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-gray-700">Subjects</FormLabel>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addSubject}
+                  className="h-8"
+                >
+                  Add Subject
+                </Button>
+              </div>
+              
+              {form.watch("subjects").map((_, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <FormField
+                    control={form.control}
+                    name={`subjects.${index}`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="h-11 border-gray-300 focus:border-gray-400">
+                              <SelectValue placeholder="Select a subject" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {isLoadingSubjects ? (
+                                <SelectItem value="loading">Loading subjects...</SelectItem>
+                              ) : schoolSubjects.length === 0 ? (
+                                <SelectItem value="no_subjects">No subjects available</SelectItem>
+                              ) : (
+                                schoolSubjects.map((subject) => (
+                                  <SelectItem key={subject.id} value={subject.id}>
+                                    {subject.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                  {form.watch("subjects").length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeSubject(index)}
+                      className="h-11 w-11"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
 
             <FormField
               control={form.control}
