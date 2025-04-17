@@ -10,6 +10,9 @@ export const teacherFormSchema = z.object({
   dateOfBirth: z.string(),
   gender: z.enum(["male", "female"]),
   email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
   phoneNumber: z.string().min(10, {
     message: "Please enter a valid phone number.",
   }),
@@ -17,10 +20,9 @@ export const teacherFormSchema = z.object({
   teacherId: z.string().min(3, {
     message: "Teacher School ID must be at least 3 characters.",
   }),
-  governmentId: z.string().optional().refine(
-    (val) => !val || val.length >= 6,
-    "Government ID must be at least 6 characters."
-  ),
+  governmentId: z.string().min(6, {
+    message: "Government ID must be at least 6 characters.",
+  }),
   subjects: z.array(z.string()).min(1, {
     message: "Please select at least one subject.",
   }),

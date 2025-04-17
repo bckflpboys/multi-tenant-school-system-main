@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { ZodError } from "zod"
 import clientPromise from "@/lib/mongodb"
 import { teacherFormSchema } from "@/lib/validations/teacher"
+import bcrypt from "bcryptjs"
 
 export async function POST(req: Request) {
   try {
@@ -28,10 +29,15 @@ export async function POST(req: Request) {
     const client = await clientPromise
     const schoolDb = client.db(`school-${schoolId}`)
     const teachersCollection = schoolDb.collection('teachers')
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(validatedData.password, 12)
     
-    // Create the teacher
+    // Create the teacher with role and hashed password
     const newTeacher = {
       ...validatedData,
+      password: hashedPassword,
+      role: 'teacher',
       schoolId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -42,8 +48,19 @@ export async function POST(req: Request) {
     const result = await teachersCollection.insertOne(newTeacher)
     console.log('Created teacher:', result)
 
+    // Create a safe response object without the password
+    const responseTeacher = {
+      ...newTeacher,
+      _id: result.insertedId,
+      password: undefined
+    }
+    delete responseTeacher.password
+
     return NextResponse.json(
-      { message: 'Teacher created successfully', teacherId: result.insertedId },
+      { 
+        message: 'Teacher created successfully', 
+        teacher: responseTeacher
+      },
       { status: 201 }
     )
 
@@ -89,8 +106,11 @@ export async function GET(req: Request) {
     const schoolDb = client.db(`school-${schoolId}`)
     const teachersCollection = schoolDb.collection('teachers')
 
-    // Get all teachers for the school
-    const teachers = await teachersCollection.find().sort({ createdAt: -1 }).toArray()
+    // Get all teachers for the school, excluding the password field
+    const teachers = await teachersCollection
+      .find({}, { projection: { password: 0 } })
+      .sort({ createdAt: -1 })
+      .toArray()
 
     return NextResponse.json(teachers)
 

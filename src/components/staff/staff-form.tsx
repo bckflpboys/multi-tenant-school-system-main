@@ -137,6 +137,24 @@ export function StaffForm({ initialData, onSubmit, isLoading }: StaffFormProps) 
               />
             </div>
 
+            <FormField
+              control={form.control}
+              name="governmentId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700">Government ID Number</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Enter national ID or passport number" 
+                      {...field}
+                      className="h-11 border-gray-300 focus:border-gray-400"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -227,23 +245,7 @@ export function StaffForm({ initialData, onSubmit, isLoading }: StaffFormProps) 
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="governmentId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Government ID Number</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter national ID or passport number" 
-                      {...field}
-                      className="h-11 border-gray-300 focus:border-gray-400"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500" />
-                </FormItem>
-              )}
-            />
+           
           </CardContent>
         </Card>
 
