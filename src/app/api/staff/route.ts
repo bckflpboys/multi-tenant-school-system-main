@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { ZodError } from "zod"
 import clientPromise from "@/lib/mongodb"
 import { staffFormSchema } from "@/lib/validations/staff"
+import bcrypt from "bcryptjs"
 
 export async function POST(req: Request) {
   try {
@@ -28,10 +29,15 @@ export async function POST(req: Request) {
     const client = await clientPromise
     const schoolDb = client.db(`school-${schoolId}`)
     const staffCollection = schoolDb.collection('staff')
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(validatedData.password, 12)
     
-    // Create the staff member
+    // Create the staff member with role and hashed password
     const newStaff = {
       ...validatedData,
+      password: hashedPassword,
+      role: 'staff',
       schoolId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -42,8 +48,19 @@ export async function POST(req: Request) {
     const result = await staffCollection.insertOne(newStaff)
     console.log('Created staff member:', result)
 
+    // Create a safe response object without the password
+    const responseStaff = {
+      ...newStaff,
+      _id: result.insertedId,
+      password: undefined
+    }
+    delete responseStaff.password
+
     return NextResponse.json(
-      { message: 'Staff member created successfully', staffId: result.insertedId },
+      { 
+        message: 'Staff member created successfully', 
+        staff: responseStaff
+      },
       { status: 201 }
     )
 
@@ -89,8 +106,11 @@ export async function GET(req: Request) {
     const schoolDb = client.db(`school-${schoolId}`)
     const staffCollection = schoolDb.collection('staff')
 
-    // Get all staff members for the school
-    const staff = await staffCollection.find().sort({ createdAt: -1 }).toArray()
+    // Get all staff members for the school, excluding the password field
+    const staff = await staffCollection
+      .find({}, { projection: { password: 0 } })
+      .sort({ createdAt: -1 })
+      .toArray()
 
     return NextResponse.json(staff)
 

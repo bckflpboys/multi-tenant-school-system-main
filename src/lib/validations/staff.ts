@@ -10,6 +10,9 @@ export const staffFormSchema = z.object({
   dateOfBirth: z.string(),
   gender: z.enum(["male", "female"]),
   email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
   phoneNumber: z.string().min(10, {
     message: "Please enter a valid phone number.",
   }),

@@ -48,6 +48,7 @@ export function StaffForm({ initialData, onSubmit, isLoading }: StaffFormProps) 
       employmentType: "full-time",
       emergencyContact: "",
       medicalInfo: "",
+      password: "",
     },
   })
 
@@ -161,11 +162,11 @@ export function StaffForm({ initialData, onSubmit, isLoading }: StaffFormProps) 
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Email Address</FormLabel>
+                    <FormLabel className="text-gray-700">Email Address*</FormLabel>
                     <FormControl>
                       <Input 
                         type="email"
-                        placeholder="Enter email address" 
+                        placeholder="Enter staff email" 
                         {...field}
                         className="h-11 border-gray-300 focus:border-gray-400"
                       />
@@ -176,23 +177,60 @@ export function StaffForm({ initialData, onSubmit, isLoading }: StaffFormProps) 
               />
               <FormField
                 control={form.control}
-                name="phoneNumber"
+                name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Phone Number</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="tel"
-                        placeholder="Enter phone number" 
-                        {...field}
-                        className="h-11 border-gray-300 focus:border-gray-400"
-                      />
-                    </FormControl>
+                    <FormLabel className="text-gray-700">Password*</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input 
+                          type="text"
+                          placeholder="Enter password or generate" 
+                          {...field}
+                          className="h-11 border-gray-300 focus:border-gray-400"
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="default"
+                        className="h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-pointer whitespace-nowrap"
+                        onClick={() => {
+                          const govId = form.getValues('governmentId');
+                          if (!govId) {
+                            alert('Please enter Government ID Number first');
+                            return;
+                          }
+                          const generatedPassword = `@Ccess${govId}`;
+                          field.onChange(generatedPassword);
+                        }}
+                      >
+                        Generate Password
+                      </Button>
+                    </div>
                     <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700">Phone Number</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="tel"
+                      placeholder="Enter phone number" 
+                      {...field}
+                      className="h-11 border-gray-300 focus:border-gray-400"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
