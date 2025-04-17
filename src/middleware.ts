@@ -9,6 +9,7 @@ const roleRouteAccess: Record<UserRole, string[]> = {
   super_admin: ['/dashboard/*'],
   super_admin_staff: ['/dashboard/*'],
   school_admin: [
+    '/dashboard',
     '/dashboard/staff',
     '/dashboard/teachers',
     '/dashboard/students',
@@ -27,6 +28,7 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/attendance',
     '/dashboard/grades',
     '/dashboard/classes',
+    '/dashboard/examinations',
     '/dashboard/subjects'
   ],
   teacher: [
@@ -34,12 +36,18 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/grades',
     '/dashboard/attendance',
     '/dashboard/students',
+    '/dashboard/lessons/timetable',
+    '/dashboard/lessons',
+    '/dashboard/examinations',
     '/dashboard/subjects'
   ],
   student: [
     '/dashboard/grades',
     '/dashboard/attendance',
     '/dashboard/schedule',
+    '/dashboard/lessons/timetable',
+    '/dashboard/lessons',
+    '/dashboard/examinations',
     '/dashboard/subjects'
   ]
 }
