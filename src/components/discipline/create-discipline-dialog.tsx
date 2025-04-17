@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
+import { toast } from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -17,16 +19,37 @@ import type { DisciplineFormValues } from "@/lib/validations/discipline"
 export function CreateDisciplineDialog() {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { data: session } = useSession()
 
   const onSubmit = async (data: DisciplineFormValues) => {
     setIsLoading(true)
     
     try {
-      // TODO: Implement discipline record creation logic
-      console.log(data)
+      if (!session?.user?.schoolId) {
+        throw new Error("School ID not found")
+      }
+
+      const response = await fetch("/api/discipline", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          schoolId: session.user.schoolId,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to create discipline record")
+      }
+
+      toast.success("Discipline record created successfully")
       setOpen(false)
     } catch (error) {
       console.error(error)
+      toast.error(error instanceof Error ? error.message : "Failed to create discipline record")
     } finally {
       setIsLoading(false)
     }
