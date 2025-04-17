@@ -29,10 +29,10 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
       name: "",
       code: "",
       description: "",
-      capacity: undefined,
+      capacity: 0,
       headTeacherId: "",
       subjects: [],
-      fees: undefined,
+      fees: 0,
     },
   })
 
@@ -110,8 +110,8 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
                       <Input 
                         type="number"
                         placeholder="Enter maximum capacity (optional)" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
                         className="h-11 border-gray-300 focus:border-gray-400"
                       />
                     </FormControl>
@@ -129,8 +129,8 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
                       <Input 
                         type="number"
                         placeholder="Enter fees amount (optional)" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
                         className="h-11 border-gray-300 focus:border-gray-400"
                       />
                     </FormControl>
@@ -166,9 +166,9 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
                   <FormLabel className="text-gray-700">Subjects</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Enter subjects (comma separated)" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))}
+                      placeholder="Enter subject IDs (comma-separated)" 
+                      value={field.value.join(", ")}
+                      onChange={(e) => field.onChange(e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
                       className="h-11 border-gray-300 focus:border-gray-400"
                     />
                   </FormControl>
@@ -179,8 +179,12 @@ export function GradeLevelForm({ initialData, onSubmit, isLoading }: GradeLevelF
           </CardContent>
         </Card>
 
-        <div className="flex justify-end pt-4">
-          <Button type="submit" disabled={isLoading} className="min-w-[120px]">
+        <div className="flex justify-end">
+          <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium px-8 py-2.5"
+          >
             {isLoading ? "Creating..." : "Create Grade Level"}
           </Button>
         </div>
