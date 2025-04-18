@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FaBook, FaGraduationCap, FaBuilding, FaCalendarAlt } from 'react-icons/fa'
+import { FaBook, FaGraduationCap, FaBuilding, FaCalendarAlt, FaChalkboardTeacher } from 'react-icons/fa'
 import { useSession } from "next-auth/react"
 
 interface Subject {
@@ -12,32 +12,74 @@ interface Subject {
   description: string
   department: string
   gradeLevel: string
+  headTeacherId: string
   createdAt: string
+}
+
+interface GradeLevel {
+  _id: string
+  name: string
+  code: string
+}
+
+interface Teacher {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  teacherId: string
 }
 
 export function SubjectList() {
   const { data: session } = useSession()
   const [subjects, setSubjects] = useState<Subject[]>([])
+  const [gradeLevels, setGradeLevels] = useState<GradeLevel[]>([])
+  const [teachers, setTeachers] = useState<Teacher[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchData = async () => {
       try {
         if (session?.user?.schoolId) {
-          const response = await fetch(`/api/subjects?schoolId=${session.user.schoolId}`)
-          if (!response.ok) throw new Error('Failed to fetch subjects')
-          const data = await response.json()
-          setSubjects(data)
+          setIsLoading(true)
+          
+          // Fetch subjects
+          const subjectsResponse = await fetch(`/api/subjects?schoolId=${session.user.schoolId}`)
+          if (!subjectsResponse.ok) throw new Error('Failed to fetch subjects')
+          const subjectsData = await subjectsResponse.json()
+          setSubjects(subjectsData)
+
+          // Fetch grade levels
+          const gradeLevelsResponse = await fetch(`/api/grade-levels?schoolId=${session.user.schoolId}`)
+          if (!gradeLevelsResponse.ok) throw new Error('Failed to fetch grade levels')
+          const gradeLevelsData = await gradeLevelsResponse.json()
+          setGradeLevels(gradeLevelsData)
+
+          // Fetch teachers
+          const teachersResponse = await fetch(`/api/teachers?schoolId=${session.user.schoolId}`)
+          if (!teachersResponse.ok) throw new Error('Failed to fetch teachers')
+          const teachersData = await teachersResponse.json()
+          setTeachers(teachersData)
         }
       } catch (error) {
-        console.error('Error fetching subjects:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchSubjects()
+    fetchData()
   }, [session])
+
+  const getGradeLevelName = (gradeLevelId: string) => {
+    const gradeLevel = gradeLevels.find(gl => gl._id === gradeLevelId)
+    return gradeLevel ? `${gradeLevel.name} (${gradeLevel.code})` : 'Unknown Grade Level'
+  }
+
+  const getTeacherName = (teacherId: string) => {
+    const teacher = teachers.find(t => t._id === teacherId)
+    return teacher ? `${teacher.firstName} ${teacher.lastName}` : 'Unknown Teacher'
+  }
 
   if (isLoading) {
     return (
@@ -88,11 +130,19 @@ export function SubjectList() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-2">
+                <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm p-3 rounded-lg">
                   <FaGraduationCap className="h-5 w-5 text-blue-500" />
                   <div className="text-gray-900">
-                    <span className="font-medium mr-2">Grade Level:</span>
-                    {subject.gradeLevel}
+                    <div className="font-medium">Grade Level</div>
+                    <div>{getGradeLevelName(subject.gradeLevel)}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm p-3 rounded-lg">
+                  <FaChalkboardTeacher className="h-5 w-5 text-blue-500" />
+                  <div className="text-gray-900">
+                    <div className="font-medium">Head Teacher</div>
+                    <div>{getTeacherName(subject.headTeacherId)}</div>
                   </div>
                 </div>
               </div>

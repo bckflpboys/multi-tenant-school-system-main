@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -13,8 +15,29 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { subjectFormSchema, type SubjectFormValues } from "@/lib/validations/subject"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+interface GradeLevel {
+  _id: string
+  name: string
+  code: string
+}
+
+interface Teacher {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  teacherId: string
+}
 
 interface SubjectFormProps {
   initialData?: SubjectFormValues
@@ -23,6 +46,12 @@ interface SubjectFormProps {
 }
 
 export function SubjectForm({ initialData, onSubmit, isLoading }: SubjectFormProps) {
+  const { data: session } = useSession()
+  const [gradeLevels, setGradeLevels] = useState<GradeLevel[]>([])
+  const [isLoadingGradeLevels, setIsLoadingGradeLevels] = useState(true)
+  const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [isLoadingTeachers, setIsLoadingTeachers] = useState(true)
+
   const form = useForm<SubjectFormValues>({
     resolver: zodResolver(subjectFormSchema),
     defaultValues: initialData ?? {
@@ -36,6 +65,43 @@ export function SubjectForm({ initialData, onSubmit, isLoading }: SubjectFormPro
       credits: undefined,
     },
   })
+
+  useEffect(() => {
+    const fetchGradeLevels = async () => {
+      if (!session?.user?.schoolId) return
+      
+      try {
+        setIsLoadingGradeLevels(true)
+        const response = await fetch(`/api/grade-levels?schoolId=${session.user.schoolId}`)
+        if (!response.ok) throw new Error('Failed to fetch grade levels')
+        const data = await response.json()
+        setGradeLevels(data)
+      } catch (error) {
+        console.error('Error fetching grade levels:', error)
+      } finally {
+        setIsLoadingGradeLevels(false)
+      }
+    }
+
+    const fetchTeachers = async () => {
+      if (!session?.user?.schoolId) return
+      
+      try {
+        setIsLoadingTeachers(true)
+        const response = await fetch(`/api/teachers?schoolId=${session.user.schoolId}`)
+        if (!response.ok) throw new Error('Failed to fetch teachers')
+        const data = await response.json()
+        setTeachers(data)
+      } catch (error) {
+        console.error('Error fetching teachers:', error)
+      } finally {
+        setIsLoadingTeachers(false)
+      }
+    }
+
+    fetchGradeLevels()
+    fetchTeachers()
+  }, [session?.user?.schoolId])
 
   return (
     <Form {...form}>
@@ -124,13 +190,29 @@ export function SubjectForm({ initialData, onSubmit, isLoading }: SubjectFormPro
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">Grade Level</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Enter grade level (e.g., G1, K1)" 
-                        {...field}
-                        className="h-11 border-gray-300 focus:border-gray-400"
-                      />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-11 border-gray-300 focus:border-gray-400">
+                          <SelectValue placeholder="Select a grade level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {isLoadingGradeLevels ? (
+                          <SelectItem value="loading" disabled>Loading grade levels...</SelectItem>
+                        ) : gradeLevels.length === 0 ? (
+                          <SelectItem value="none" disabled>No grade levels found</SelectItem>
+                        ) : (
+                          gradeLevels.map((gradeLevel) => (
+                            <SelectItem 
+                              key={gradeLevel._id} 
+                              value={gradeLevel._id}
+                            >
+                              {gradeLevel.name} ({gradeLevel.code})
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
                     <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
@@ -144,13 +226,29 @@ export function SubjectForm({ initialData, onSubmit, isLoading }: SubjectFormPro
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">Head Teacher</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Enter head teacher ID" 
-                        {...field}
-                        className="h-11 border-gray-300 focus:border-gray-400"
-                      />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-11 border-gray-300 focus:border-gray-400">
+                          <SelectValue placeholder="Select head teacher" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {isLoadingTeachers ? (
+                          <SelectItem value="loading" disabled>Loading teachers...</SelectItem>
+                        ) : teachers.length === 0 ? (
+                          <SelectItem value="none" disabled>No teachers found</SelectItem>
+                        ) : (
+                          teachers.map((teacher) => (
+                            <SelectItem 
+                              key={teacher._id} 
+                              value={teacher._id}
+                            >
+                              {teacher.firstName} {teacher.lastName} ({teacher.teacherId})
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
                     <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
@@ -182,14 +280,81 @@ export function SubjectForm({ initialData, onSubmit, isLoading }: SubjectFormPro
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700">Teachers</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter teacher IDs (comma separated)" 
-                      value={field.value.join(", ")}
-                      onChange={(e) => field.onChange(e.target.value.split(',').map(id => id.trim()).filter(id => id !== ""))}
-                      className="h-11 border-gray-300 focus:border-gray-400"
-                    />
-                  </FormControl>
+                  <Select 
+                    onValueChange={(value) => {
+                      const currentTeachers = new Set(field.value)
+                      if (currentTeachers.has(value)) {
+                        currentTeachers.delete(value)
+                      } else {
+                        currentTeachers.add(value)
+                      }
+                      field.onChange(Array.from(currentTeachers))
+                    }}
+                    value={field.value[field.value.length - 1] || ""}
+                  >
+                    <FormControl>
+                      <SelectTrigger 
+                        className="h-11 border-gray-300 focus:border-gray-400"
+                        data-teacher-trigger={field.name}
+                      >
+                        <SelectValue placeholder="Select teachers" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {isLoadingTeachers ? (
+                        <SelectItem value="loading" disabled>Loading teachers...</SelectItem>
+                      ) : teachers.length === 0 ? (
+                        <SelectItem value="none" disabled>No teachers found</SelectItem>
+                      ) : (
+                        teachers.map((teacher) => (
+                          <SelectItem 
+                            key={teacher._id} 
+                            value={teacher._id}
+                            className={field.value.includes(teacher._id) ? "bg-gray-100" : ""}
+                          >
+                            {teacher.firstName} {teacher.lastName} ({teacher.teacherId})
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {field.value.map((teacherId) => {
+                      const teacher = teachers.find(t => t._id === teacherId)
+                      return teacher ? (
+                        <div 
+                          key={teacher._id} 
+                          className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                        >
+                          <span>{teacher.firstName} {teacher.lastName}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTeachers = field.value.filter(id => id !== teacher._id)
+                              field.onChange(newTeachers)
+                            }}
+                            className="text-green-600 hover:text-green-800"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : null
+                    })}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const trigger = document.querySelector(`[data-teacher-trigger="${field.name}"]`)
+                      if (trigger instanceof HTMLElement) {
+                        trigger.click()
+                      }
+                    }}
+                    className="mt-2 text-green-600 border-green-600 hover:bg-green-50"
+                  >
+                    + Add Another Teacher
+                  </Button>
                   <FormMessage className="text-red-500" />
                 </FormItem>
               )}
