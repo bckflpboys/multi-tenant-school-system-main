@@ -16,29 +16,70 @@ interface Class {
   createdAt: string
 }
 
+interface GradeLevel {
+  _id: string
+  name: string
+  code: string
+}
+
+interface Teacher {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  teacherId: string
+}
+
 export function ClassList() {
   const { data: session } = useSession()
   const [classes, setClasses] = useState<Class[]>([])
+  const [gradeLevels, setGradeLevels] = useState<GradeLevel[]>([])
+  const [teachers, setTeachers] = useState<Teacher[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchClasses = async () => {
+    const fetchData = async () => {
       try {
         if (session?.user?.schoolId) {
-          const response = await fetch(`/api/classes?schoolId=${session.user.schoolId}`)
-          if (!response.ok) throw new Error('Failed to fetch classes')
-          const data = await response.json()
-          setClasses(data)
+          setIsLoading(true)
+
+          // Fetch classes
+          const classesResponse = await fetch(`/api/classes?schoolId=${session.user.schoolId}`)
+          if (!classesResponse.ok) throw new Error('Failed to fetch classes')
+          const classesData = await classesResponse.json()
+          setClasses(classesData)
+
+          // Fetch grade levels
+          const gradeLevelsResponse = await fetch(`/api/grade-levels?schoolId=${session.user.schoolId}`)
+          if (!gradeLevelsResponse.ok) throw new Error('Failed to fetch grade levels')
+          const gradeLevelsData = await gradeLevelsResponse.json()
+          setGradeLevels(gradeLevelsData)
+
+          // Fetch teachers
+          const teachersResponse = await fetch(`/api/teachers?schoolId=${session.user.schoolId}`)
+          if (!teachersResponse.ok) throw new Error('Failed to fetch teachers')
+          const teachersData = await teachersResponse.json()
+          setTeachers(teachersData)
         }
       } catch (error) {
-        console.error('Error fetching classes:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchClasses()
+    fetchData()
   }, [session])
+
+  const getGradeLevelName = (gradeLevelId: string) => {
+    const gradeLevel = gradeLevels.find(gl => gl._id === gradeLevelId)
+    return gradeLevel ? `${gradeLevel.name} (${gradeLevel.code})` : 'Unknown Grade'
+  }
+
+  const getTeacherName = (teacherId: string) => {
+    const teacher = teachers.find(t => t._id === teacherId)
+    return teacher ? `${teacher.firstName} ${teacher.lastName}` : 'Unknown Teacher'
+  }
 
   if (isLoading) {
     return (
@@ -73,7 +114,7 @@ export function ClassList() {
                   </CardTitle>
                   <CardDescription className="flex items-center gap-2 text-gray-600 mt-1">
                     <FaGraduationCap className="h-4 w-4 text-blue-500" />
-                    Grade {classItem.grade}
+                    {getGradeLevelName(classItem.grade)}
                   </CardDescription>
                 </div>
               </div>
@@ -106,7 +147,10 @@ export function ClassList() {
                 <span>Created: {new Date(classItem.createdAt).toLocaleDateString()}</span>
               </div>
               <div className="mt-2 text-gray-700">
-                <span className="font-medium">Teachers:</span> {classItem.teachers.length}
+                <span className="font-medium">Class Teacher:</span>{' '}
+                <span className="text-blue-700">
+                  {classItem.teachers[0] ? getTeacherName(classItem.teachers[0]) : 'Not assigned'}
+                </span>
               </div>
             </CardContent>
           </div>

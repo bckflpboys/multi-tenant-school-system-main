@@ -5,11 +5,13 @@ export const classFormSchema = z.object({
     message: "Class name must be at least 2 characters.",
   }),
   teachers: z.array(z.string().min(2, {
-    message: "Teacher name must be at least 2 characters.",
-  })).min(1, {
-    message: "At least one teacher is required.",
+    message: "Class teacher name must be at least 2 characters.",
+  })).length(1, {
+    message: "Class teacher is required.",
   }),
-  grade: z.string(),
+  grade: z.string().min(1, {
+    message: "Please select a grade level.",
+  }),
   academicYear: z.string(),
   capacity: z.union([z.string(), z.number()]).transform((val) => {
     if (typeof val === 'string') {

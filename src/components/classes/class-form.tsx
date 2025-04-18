@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -12,8 +14,28 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { classFormSchema, type ClassFormValues } from "@/lib/validations/class"
-import { X } from "lucide-react"
+
+interface GradeLevel {
+  _id: string
+  name: string
+  code: string
+}
+
+interface Teacher {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  teacherId: string
+}
 
 interface ClassFormProps {
   initialData?: ClassFormValues
@@ -22,6 +44,12 @@ interface ClassFormProps {
 }
 
 export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) {
+  const { data: session } = useSession()
+  const [gradeLevels, setGradeLevels] = useState<GradeLevel[]>([])
+  const [isLoadingGradeLevels, setIsLoadingGradeLevels] = useState(true)
+  const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [isLoadingTeachers, setIsLoadingTeachers] = useState(true)
+
   const form = useForm<ClassFormValues>({
     resolver: zodResolver(classFormSchema),
     defaultValues: initialData ?? {
@@ -33,17 +61,35 @@ export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) 
     },
   })
 
-  const addTeacher = () => {
-    const currentTeachers = form.getValues("teachers")
-    form.setValue("teachers", [...currentTeachers, ""])
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!session?.user?.schoolId) return
+      
+      try {
+        setIsLoadingGradeLevels(true)
+        setIsLoadingTeachers(true)
 
-  const removeTeacher = (index: number) => {
-    const currentTeachers = form.getValues("teachers")
-    if (currentTeachers.length > 1) {
-      form.setValue("teachers", currentTeachers.filter((_, i) => i !== index))
+        // Fetch grade levels
+        const gradeLevelsResponse = await fetch(`/api/grade-levels?schoolId=${session.user.schoolId}`)
+        if (!gradeLevelsResponse.ok) throw new Error('Failed to fetch grade levels')
+        const gradeLevelsData = await gradeLevelsResponse.json()
+        setGradeLevels(gradeLevelsData)
+
+        // Fetch teachers
+        const teachersResponse = await fetch(`/api/teachers?schoolId=${session.user.schoolId}`)
+        if (!teachersResponse.ok) throw new Error('Failed to fetch teachers')
+        const teachersData = await teachersResponse.json()
+        setTeachers(teachersData)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setIsLoadingGradeLevels(false)
+        setIsLoadingTeachers(false)
+      }
     }
-  }
+
+    fetchData()
+  }, [session?.user?.schoolId])
 
   return (
     <Form {...form}>
@@ -66,52 +112,39 @@ export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) 
           )}
         />
         
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <FormLabel className="text-gray-700">Teachers</FormLabel>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addTeacher}
-              className="h-8"
-            >
-              Add Teacher
-            </Button>
-          </div>
-          
-          {form.watch("teachers").map((_, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <FormField
-                control={form.control}
-                name={`teachers.${index}`}
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormControl>
-                      <Input
-                        placeholder="Enter teacher's name"
-                        className="h-11"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-              {form.watch("teachers").length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeTeacher(index)}
-                  className="h-11 w-11"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
+        <FormField
+          control={form.control}
+          name="teachers.0"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-gray-700">Class Teacher</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select a class teacher" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {isLoadingTeachers ? (
+                    <SelectItem value="loading" disabled>Loading teachers...</SelectItem>
+                  ) : teachers.length === 0 ? (
+                    <SelectItem value="none" disabled>No teachers found</SelectItem>
+                  ) : (
+                    teachers.map((teacher) => (
+                      <SelectItem 
+                        key={teacher._id} 
+                        value={teacher._id}
+                      >
+                        {teacher.firstName} {teacher.lastName} ({teacher.teacherId})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-red-500" />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -119,17 +152,34 @@ export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) 
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-gray-700">Grade Level</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="e.g., 8, 9, 10" 
-                  {...field}
-                  className="h-11"
-                />
-              </FormControl>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select a grade level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {isLoadingGradeLevels ? (
+                    <SelectItem value="loading" disabled>Loading grade levels...</SelectItem>
+                  ) : gradeLevels.length === 0 ? (
+                    <SelectItem value="none" disabled>No grade levels found</SelectItem>
+                  ) : (
+                    gradeLevels.map((gradeLevel) => (
+                      <SelectItem 
+                        key={gradeLevel._id} 
+                        value={gradeLevel._id}
+                      >
+                        {gradeLevel.name} ({gradeLevel.code})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
               <FormMessage className="text-red-500" />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="academicYear"
@@ -147,6 +197,7 @@ export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) 
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="capacity"
@@ -166,6 +217,7 @@ export function ClassForm({ initialData, onSubmit, isLoading }: ClassFormProps) 
             </FormItem>
           )}
         />
+
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Creating..." : "Create Class"}
         </Button>
