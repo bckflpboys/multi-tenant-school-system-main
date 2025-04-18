@@ -330,49 +330,48 @@ export function LessonTimetable() {
 
           {/* Empty grid cells */}
           {days.map(day => (
-            timeSlots.map((time, i) => (
-              <div
-                key={`${day}-${time}`}
-                className="border border-gray-200 rounded-sm min-h-[80px]"
-                style={{ gridColumn: `${days.indexOf(day) + 2}`, gridRow: i + 2 }}
-              />
-            ))
+            <div key={day} className="relative" style={{ gridColumn: days.indexOf(day) + 2, gridRow: '2 / span ' + timeSlots.length }}>
+              {timeSlots.map((time) => (
+                <div
+                  key={`${day}-${time}`}
+                  className="border border-gray-200 rounded-sm min-h-[80px]"
+                />
+              ))}
+              {/* Lessons for this day */}
+              {lessons
+                .filter(lesson => lesson.dayOfWeek.toLowerCase() === day.toLowerCase())
+                .map(lesson => {
+                  const gridRow = calculateGridRow(lesson.startTime) - 1 // Subtract 1 because we're inside the day column
+                  const gridRowSpan = calculateGridRowSpan(lesson.startTime, lesson.endTime)
+                  const top = (gridRow - 1) * 80 // 80px is our row height
+                  const height = gridRowSpan * 80
+
+                  return (
+                    <div
+                      key={lesson._id}
+                      className="absolute bg-purple-50 border border-purple-200 rounded-md p-2 overflow-y-auto left-0 right-0 mx-[2px]"
+                      style={{
+                        top: `${top}px`,
+                        height: `${height}px`
+                      }}
+                    >
+                      <div className="space-y-1">
+                        <div className="font-medium text-black">{subjects[lesson.subjectId]?.code}</div>
+                        <div className="text-sm text-gray-600">
+                          {teachers[lesson.teacherId]?.firstName} {teachers[lesson.teacherId]?.lastName}
+                        </div>
+                        {lesson.room && (
+                          <div className="text-sm text-gray-500">Room: {lesson.room}</div>
+                        )}
+                        <div className="text-xs text-gray-400">
+                          {lesson.startTime} - {lesson.endTime}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
           ))}
-
-          {/* Lessons */}
-          {lessons.map(lesson => {
-            const dayIndex = days.findIndex(d => d.toLowerCase() === lesson.dayOfWeek.toLowerCase())
-            if (dayIndex === -1) return null
-
-            const gridRow = calculateGridRow(lesson.startTime)
-            const gridRowSpan = calculateGridRowSpan(lesson.startTime, lesson.endTime)
-
-            return (
-              <div
-                key={lesson._id}
-                className="absolute bg-purple-50 border border-purple-200 rounded-md p-2 overflow-y-auto"
-                style={{
-                  gridColumn: dayIndex + 2,
-                  gridRow: `${gridRow} / span ${gridRowSpan}`,
-                  inset: '2px',
-                  minHeight: '76px'
-                }}
-              >
-                <div className="space-y-1">
-                  <div className="font-medium text-black">{subjects[lesson.subjectId]?.code}</div>
-                  <div className="text-sm text-gray-600">
-                    {teachers[lesson.teacherId]?.firstName} {teachers[lesson.teacherId]?.lastName}
-                  </div>
-                  {lesson.room && (
-                    <div className="text-sm text-gray-500">Room: {lesson.room}</div>
-                  )}
-                  <div className="text-xs text-gray-400">
-                    {lesson.startTime} - {lesson.endTime}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
         </>
       )}
     </div>
