@@ -5,17 +5,20 @@ A comprehensive school management system built with Next.js that supports multip
 ## Features
 
 - 🏫 Multi-tenant architecture supporting multiple schools
-- 🔐 Secure authentication and authorization
-- 👥 User role management (Admin, Teacher, Student)
-- 📊 Dashboard with analytics and charts
-- 📝 Student management
-- 👨‍🏫 Teacher management
-- 📚 Subject management
-- 🗄️ MongoDB database integration
+- 🔐 Secure authentication and authorization with role-based access (Super Admin, School Admin, Teacher, Student)
+- 👥 User management with different roles and permissions
+- 📊 Interactive dashboards with analytics and charts using Chart.js
+- 📝 Complete student management system
+- 👨‍🏫 Teacher management and scheduling
+- 📚 Subject and class management
+- 📅 Lesson scheduling and timetable generation
+- 📋 Examination management with auto-generated exam codes
+- ⚖️ Discipline record management
+- 🗄️ MongoDB multi-tenant database architecture
 - 🎨 Modern UI with Tailwind CSS and shadcn/ui
-- 📱 Responsive design
-- 📄 PDF generation for reports
-- ☁️ AWS S3 integration for file storage
+- 📱 Responsive design for all devices
+- 📄 PDF generation for reports and documents
+- ☁️ AWS S3 integration for secure file storage
 
 ## Tech Stack
 
@@ -23,13 +26,16 @@ A comprehensive school management system built with Next.js that supports multip
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
 - **UI Components:** shadcn/ui, Radix UI
-- **Authentication:** NextAuth.js
+- **Authentication:** NextAuth.js with JWT
 - **Database:** MongoDB with Mongoose
-- **Forms:** React Hook Form, Zod
+- **Forms:** React Hook Form, Zod validation
 - **Charts:** Chart.js, React-chartjs-2
 - **File Storage:** AWS S3
 - **PDF Generation:** html2pdf.js, jsPDF
 - **Icons:** Lucide React, React Icons
+- **State Management:** React Hooks
+- **API Integration:** RESTful APIs
+- **Date Handling:** date-fns
 
 ## Project Structure
 
