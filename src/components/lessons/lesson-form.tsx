@@ -99,75 +99,55 @@ export function LessonForm({ initialData, onSubmit, isLoading }: LessonFormProps
   })
 
   useEffect(() => {
-    const fetchGradeLevels = async () => {
+    const fetchData = async () => {
       if (!session?.user?.schoolId) return
       
       try {
         setIsLoadingGradeLevels(true)
-        const response = await fetch(`/api/grade-levels?schoolId=${session.user.schoolId}`)
-        if (!response.ok) throw new Error('Failed to fetch grade levels')
-        const data = await response.json()
-        setGradeLevels(data)
+        setIsLoadingTeachers(true)
+        setIsLoadingSubjects(true)
+        setIsLoadingClasses(true)
+
+        // Fetch grade levels
+        const gradeLevelsResponse = await fetch(`/api/grade-levels?schoolId=${session.user.schoolId}`)
+        if (!gradeLevelsResponse.ok) throw new Error('Failed to fetch grade levels')
+        const gradeLevelsData = await gradeLevelsResponse.json()
+        setGradeLevels(gradeLevelsData)
+
+        // Fetch teachers
+        const teachersResponse = await fetch(`/api/teachers?schoolId=${session.user.schoolId}`)
+        if (!teachersResponse.ok) throw new Error('Failed to fetch teachers')
+        const teachersData = await teachersResponse.json()
+        setTeachers(teachersData)
+
+        // Fetch subjects
+        const subjectsResponse = await fetch(`/api/subjects?schoolId=${session.user.schoolId}`)
+        if (!subjectsResponse.ok) throw new Error('Failed to fetch subjects')
+        const subjectsData = await subjectsResponse.json()
+        setSubjects(subjectsData)
+
+        // Fetch classes
+        const classesResponse = await fetch(`/api/classes?schoolId=${session.user.schoolId}`)
+        if (!classesResponse.ok) throw new Error('Failed to fetch classes')
+        const classesData = await classesResponse.json()
+        setClasses(classesData)
       } catch (error) {
-        console.error('Error fetching grade levels:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setIsLoadingGradeLevels(false)
-      }
-    }
-
-    const fetchTeachers = async () => {
-      if (!session?.user?.schoolId) return
-      
-      try {
-        setIsLoadingTeachers(true)
-        const response = await fetch(`/api/teachers?schoolId=${session.user.schoolId}`)
-        if (!response.ok) throw new Error('Failed to fetch teachers')
-        const data = await response.json()
-        setTeachers(data)
-      } catch (error) {
-        console.error('Error fetching teachers:', error)
-      } finally {
         setIsLoadingTeachers(false)
-      }
-    }
-
-    const fetchSubjects = async () => {
-      if (!session?.user?.schoolId) return
-      
-      try {
-        setIsLoadingSubjects(true)
-        const response = await fetch(`/api/subjects?schoolId=${session.user.schoolId}`)
-        if (!response.ok) throw new Error('Failed to fetch subjects')
-        const data = await response.json()
-        setSubjects(data)
-      } catch (error) {
-        console.error('Error fetching subjects:', error)
-      } finally {
         setIsLoadingSubjects(false)
-      }
-    }
-
-    const fetchClasses = async () => {
-      if (!session?.user?.schoolId) return
-      
-      try {
-        setIsLoadingClasses(true)
-        const response = await fetch(`/api/classes?schoolId=${session.user.schoolId}`)
-        if (!response.ok) throw new Error('Failed to fetch classes')
-        const data = await response.json()
-        setClasses(data)
-      } catch (error) {
-        console.error('Error fetching classes:', error)
-      } finally {
         setIsLoadingClasses(false)
       }
     }
 
-    fetchGradeLevels()
-    fetchTeachers()
-    fetchSubjects()
-    fetchClasses()
+    fetchData()
   }, [session?.user?.schoolId])
+
+  const getGradeLevelName = (gradeLevelId: string) => {
+    const gradeLevel = gradeLevels.find(gl => gl._id === gradeLevelId)
+    return gradeLevel ? `${gradeLevel.name} (${gradeLevel.code})` : 'Unknown Grade'
+  }
 
   return (
     <Form {...form}>
@@ -389,7 +369,7 @@ export function LessonForm({ initialData, onSubmit, isLoading }: LessonFormProps
                         ) : (
                           classes.map((classItem) => (
                             <SelectItem key={classItem._id} value={classItem._id}>
-                              {classItem.name} - <span className="font-bold">Grade {classItem.grade}</span> ({classItem.academicYear})
+                              {classItem.name} - {getGradeLevelName(classItem.grade)} ({classItem.academicYear})
                             </SelectItem>
                           ))
                         )}

@@ -25,24 +25,65 @@ interface Lesson {
   updatedAt: string
 }
 
+interface Class {
+  _id: string
+  name: string
+  grade: string
+  academicYear: string
+}
+
+interface Subject {
+  _id: string
+  name: string
+  code: string
+}
+
+interface Teacher {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  teacherId: string
+}
+
 interface LessonsListProps {
   schoolId: string
 }
 
 export function LessonsList({ schoolId }: LessonsListProps) {
   const [lessons, setLessons] = useState<Lesson[]>([])
+  const [classes, setClasses] = useState<Class[]>([])
+  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [teachers, setTeachers] = useState<Teacher[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchLessons = async () => {
+  const fetchData = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch(`/api/lessons?schoolId=${schoolId}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch lessons')
-      }
-      const data = await response.json()
-      setLessons(data)
+      const [lessonsRes, classesRes, subjectsRes, teachersRes] = await Promise.all([
+        fetch(`/api/lessons?schoolId=${schoolId}`),
+        fetch(`/api/classes?schoolId=${schoolId}`),
+        fetch(`/api/subjects?schoolId=${schoolId}`),
+        fetch(`/api/teachers?schoolId=${schoolId}`)
+      ])
+
+      if (!lessonsRes.ok) throw new Error('Failed to fetch lessons')
+      if (!classesRes.ok) throw new Error('Failed to fetch classes')
+      if (!subjectsRes.ok) throw new Error('Failed to fetch subjects')
+      if (!teachersRes.ok) throw new Error('Failed to fetch teachers')
+
+      const [lessonsData, classesData, subjectsData, teachersData] = await Promise.all([
+        lessonsRes.json(),
+        classesRes.json(),
+        subjectsRes.json(),
+        teachersRes.json()
+      ])
+
+      setLessons(lessonsData)
+      setClasses(classesData)
+      setSubjects(subjectsData)
+      setTeachers(teachersData)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -51,7 +92,7 @@ export function LessonsList({ schoolId }: LessonsListProps) {
   }
 
   useEffect(() => {
-    fetchLessons()
+    fetchData()
   }, [schoolId])
 
   const getStatusColor = (status: Lesson['status']) => {
@@ -77,6 +118,22 @@ export function LessonsList({ schoolId }: LessonsListProps) {
 
   const capitalizeFirstLetter = (string: string) => {
     return string.charAt(0).toUpperCase() + string.slice(1)
+  }
+
+  const getClassName = (classId?: string) => {
+    if (!classId) return 'Not assigned'
+    const classItem = classes.find(c => c._id === classId)
+    return classItem ? `${classItem.name} (${classItem.academicYear})` : 'Unknown Class'
+  }
+
+  const getSubjectName = (subjectId: string) => {
+    const subject = subjects.find(s => s._id === subjectId)
+    return subject ? `${subject.name} (${subject.code})` : 'Unknown Subject'
+  }
+
+  const getTeacherName = (teacherId: string) => {
+    const teacher = teachers.find(t => t._id === teacherId)
+    return teacher ? `${teacher.firstName} ${teacher.lastName}` : 'Unknown Teacher'
   }
 
   if (isLoading) {
@@ -114,13 +171,17 @@ export function LessonsList({ schoolId }: LessonsListProps) {
                 <div className="bg-white bg-gradient-to-br from-purple-500/20 to-indigo-500/20 p-3 rounded-xl shadow-sm">
                   <FaChalkboardTeacher className="h-6 w-6 text-purple-600" />
                 </div>
-                <div>
+                <div className="space-y-1">
                   <CardTitle className="text-xl font-semibold text-gray-900">
                     {lesson.title}
                   </CardTitle>
-                  <CardDescription className="flex items-center gap-2 text-gray-600 mt-1">
+                  <CardDescription className="flex items-center gap-2 text-gray-600">
                     <FaBook className="h-4 w-4 text-purple-500" />
-                    Subject ID: {lesson.subjectId}
+                    {getSubjectName(lesson.subjectId)}
+                  </CardDescription>
+                  <CardDescription className="flex items-center gap-2 text-gray-600">
+                    <FaChalkboardTeacher className="h-4 w-4 text-purple-500" />
+                    {getTeacherName(lesson.teacherId)}
                   </CardDescription>
                 </div>
               </div>
@@ -154,7 +215,7 @@ export function LessonsList({ schoolId }: LessonsListProps) {
                   <div className="flex items-center gap-3 p-2">
                     <FaUsers className="h-5 w-5 text-purple-500" />
                     <div className="text-gray-900">
-                      Class: {lesson.class}
+                      Class: {getClassName(lesson.class)}
                     </div>
                   </div>
                 )}

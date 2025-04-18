@@ -22,6 +22,12 @@ interface Class {
   academicYear: string
 }
 
+interface GradeLevel {
+  _id: string
+  name: string
+  code: string
+}
+
 interface Lesson {
   _id: string
   title: string
@@ -72,6 +78,7 @@ export function LessonTimetable() {
   const [selectedView, setSelectedView] = useState<"week" | "day">("week")
   const [selectedDay, setSelectedDay] = useState<string>("monday")
   const [classes, setClasses] = useState<Class[]>([])
+  const [gradeLevels, setGradeLevels] = useState<GradeLevel[]>([])
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [teachers, setTeachers] = useState<{ [key: string]: Teacher }>({})
   const [subjects, setSubjects] = useState<{ [key: string]: Subject }>({})
@@ -198,23 +205,34 @@ export function LessonTimetable() {
   }
 
   useEffect(() => {
-    const fetchClasses = async () => {
+    const fetchData = async () => {
       if (!session?.user?.schoolId) return
       
       try {
         setIsLoadingClasses(true)
-        const response = await fetch(`/api/classes?schoolId=${session.user.schoolId}`)
-        if (!response.ok) throw new Error('Failed to fetch classes')
-        const data = await response.json()
-        setClasses(data)
+        const [classesRes, gradeLevelsRes] = await Promise.all([
+          fetch(`/api/classes?schoolId=${session.user.schoolId}`),
+          fetch(`/api/grade-levels?schoolId=${session.user.schoolId}`)
+        ])
+
+        if (!classesRes.ok) throw new Error('Failed to fetch classes')
+        if (!gradeLevelsRes.ok) throw new Error('Failed to fetch grade levels')
+
+        const [classesData, gradeLevelsData] = await Promise.all([
+          classesRes.json(),
+          gradeLevelsRes.json()
+        ])
+
+        setClasses(classesData)
+        setGradeLevels(gradeLevelsData)
       } catch (error) {
-        console.error('Error fetching classes:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setIsLoadingClasses(false)
       }
     }
 
-    fetchClasses()
+    fetchData()
   }, [session?.user?.schoolId])
 
   useEffect(() => {
@@ -276,10 +294,16 @@ export function LessonTimetable() {
     return endIndex - startIndex
   }
 
+  const getGradeLevelName = (gradeId: string) => {
+    const gradeLevel = gradeLevels.find(gl => gl._id === gradeId)
+    return gradeLevel ? `${gradeLevel.name} (${gradeLevel.code})` : 'Unknown Grade'
+  }
+
   const renderTimetableGrid = (days: string[]) => (
     <div className="relative grid" style={{ 
       gridTemplateColumns: `auto ${days.map(() => '1fr').join(' ')}`,
-      gap: '0.5rem'
+      gap: '0.5rem',
+      gridAutoRows: 'minmax(80px, auto)'
     }}>
       {/* Header row */}
       <div className="bg-gray-100 font-medium p-2 rounded-md border border-gray-200 text-gray-900">Time</div>
@@ -299,7 +323,7 @@ export function LessonTimetable() {
         <>
           {/* Time labels */}
           {timeSlots.map((time) => (
-            <div key={time} className="p-2 text-sm text-gray-600">
+            <div key={time} className="p-2 text-sm text-gray-600 flex items-center">
               {time}
             </div>
           ))}
@@ -309,7 +333,7 @@ export function LessonTimetable() {
             timeSlots.map((time, i) => (
               <div
                 key={`${day}-${time}`}
-                className="border border-gray-200 rounded-sm"
+                className="border border-gray-200 rounded-sm min-h-[80px]"
                 style={{ gridColumn: `${days.indexOf(day) + 2}`, gridRow: i + 2 }}
               />
             ))
@@ -326,12 +350,12 @@ export function LessonTimetable() {
             return (
               <div
                 key={lesson._id}
-                className="absolute bg-purple-50 border border-purple-200 rounded-md p-2"
+                className="absolute bg-purple-50 border border-purple-200 rounded-md p-2 overflow-y-auto"
                 style={{
                   gridColumn: dayIndex + 2,
                   gridRow: `${gridRow} / span ${gridRowSpan}`,
-                  inset: '0',
-                  margin: '2px'
+                  inset: '2px',
+                  minHeight: '76px'
                 }}
               >
                 <div className="space-y-1">
@@ -381,7 +405,7 @@ export function LessonTimetable() {
             ) : (
               classes.map((classItem) => (
                 <SelectItem key={classItem._id} value={classItem._id}>
-                  {classItem.name} - <span className="font-bold">Grade {classItem.grade}</span> ({classItem.academicYear})
+                  {classItem.name} - {getGradeLevelName(classItem.grade)} ({classItem.academicYear})
                 </SelectItem>
               ))
             )}
