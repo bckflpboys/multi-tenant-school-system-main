@@ -49,8 +49,8 @@ export function ReadAnnouncementDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader className="sticky top-0 bg-white z-10 pb-4">
           <DialogTitle className="text-2xl font-semibold">
             {announcement.title}
           </DialogTitle>
@@ -63,7 +63,13 @@ export function ReadAnnouncementDialog({
         <div className="space-y-6">
           {/* Content */}
           <div className="bg-gray-50/50 p-4 rounded-lg text-gray-900">
-            {announcement.content}
+            <div className="prose prose-amber max-w-none">
+              {announcement.content.split('\n').map((line, i) => (
+                <span key={i} className="block">
+                  {line || <br />}
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Metadata */}

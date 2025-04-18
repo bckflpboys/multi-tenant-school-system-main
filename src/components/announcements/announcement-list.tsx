@@ -217,11 +217,32 @@ export function AnnouncementList() {
               <CardContent className="py-4">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 bg-white/80 backdrop-blur-sm p-3 rounded-lg">
-                    <div className="text-gray-900">
-                      {announcement.content.length > 200 
-                        ? announcement.content.substring(0, 200) + "..."
-                        : announcement.content
-                      }
+                    <div className="text-gray-900 whitespace-pre-line">
+                      {announcement.content.length > 200 ? (
+                        <>
+                          {announcement.content
+                            .substring(0, 200)
+                            .split('\n')
+                            .map((line, i, arr) => (
+                              <span key={i}>
+                                {line}
+                                {i < arr.length - 1 && <br />}
+                              </span>
+                            ))}
+                          ...
+                        </>
+                      ) : (
+                        <>
+                          {announcement.content
+                            .split('\n')
+                            .map((line, i, arr) => (
+                              <span key={i}>
+                                {line}
+                                {i < arr.length - 1 && <br />}
+                              </span>
+                            ))}
+                        </>
+                      )}
                       {announcement.content.length > 200 && (
                         <Button
                           variant="link"
