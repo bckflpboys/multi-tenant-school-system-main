@@ -44,70 +44,87 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
+    console.log('Received request body:', body)
     
-    // Validate the request body
-    const validatedData = announcementFormSchema.parse(body)
+    try {
+      // Validate the request body
+      const validatedData = announcementFormSchema.parse(body)
+      console.log('Validated data:', validatedData)
 
-    // Verify user has permission for this school
-    if (session.user.schoolId !== validatedData.schoolId && session.user.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      // Verify user has permission for this school
+      if (session.user.schoolId !== validatedData.schoolId && session.user.role !== 'super_admin') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+
+      // Get MongoDB client and connect to the school's database
+      const client = await clientPromise
+      const schoolDb = client.db(`school-${validatedData.schoolId}`)
+      const announcementsCollection = schoolDb.collection('announcements')
+
+      // Convert string IDs to ObjectIds for grade levels and subjects
+      const gradeLevelObjectIds = validatedData.gradeLevelIds?.map((id: string) => new ObjectId(id)) || []
+      const subjectObjectIds = validatedData.subjectIds?.map((id: string) => new ObjectId(id)) || []
+
+      // Create new announcement with ObjectIds
+      const newAnnouncement = {
+        ...validatedData,
+        gradeLevelIds: gradeLevelObjectIds,
+        subjectIds: subjectObjectIds,
+        createdBy: session.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      const result = await announcementsCollection.insertOne(newAnnouncement)
+
+      // If grade levels are specified, fetch their details
+      let gradeLevels: GradeLevel[] = []
+      if (gradeLevelObjectIds.length > 0) {
+        const gradeLevelsCollection = schoolDb.collection<GradeLevel>('grade-levels')
+        gradeLevels = await gradeLevelsCollection
+          .find({ _id: { $in: gradeLevelObjectIds } })
+          .project({ name: 1 })
+          .toArray() as GradeLevel[]
+      }
+
+      // If subjects are specified, fetch their details
+      let subjects: Subject[] = []
+      if (subjectObjectIds.length > 0) {
+        const subjectsCollection = schoolDb.collection<Subject>('subjects')
+        subjects = await subjectsCollection
+          .find({ _id: { $in: subjectObjectIds } })
+          .project({ name: 1 })
+          .toArray() as Subject[]
+      }
+
+      // Return the created announcement with grade levels and subjects
+      return NextResponse.json({
+        ...validatedData,
+        _id: result.insertedId,
+        createdBy: session.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        gradeLevels,
+        subjects: subjects.map(subject => ({ _id: subject._id.toString(), name: subject.name }))
+      })
+    } catch (validationError) {
+      console.error('Validation error:', validationError)
+      if (validationError instanceof ZodError) {
+        return NextResponse.json({ 
+          error: validationError.errors.map(err => ({
+            path: err.path.join('.'),
+            message: err.message
+          }))
+        }, { status: 400 })
+      }
+      throw validationError
     }
-
-    // Get MongoDB client and connect to the school's database
-    const client = await clientPromise
-    const schoolDb = client.db(`school-${validatedData.schoolId}`)
-    const announcementsCollection = schoolDb.collection('announcements')
-
-    // Convert string IDs to ObjectIds for grade levels and subjects
-    const gradeLevelObjectIds = validatedData.gradeLevelIds?.map((id: string) => new ObjectId(id)) || []
-    const subjectObjectIds = validatedData.subjectIds?.map((id: string) => new ObjectId(id)) || []
-
-    // Create new announcement with ObjectIds
-    const newAnnouncement = await announcementsCollection.insertOne({
-      ...validatedData,
-      gradeLevelIds: gradeLevelObjectIds,
-      subjectIds: subjectObjectIds,
-      createdBy: session.user.id,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    })
-
-    // If grade levels are specified, fetch their details
-    let gradeLevels: GradeLevel[] = []
-    if (gradeLevelObjectIds.length > 0) {
-      const gradeLevelsCollection = schoolDb.collection<GradeLevel>('grade-levels')
-      gradeLevels = await gradeLevelsCollection
-        .find({ _id: { $in: gradeLevelObjectIds } })
-        .project({ name: 1 })
-        .toArray() as GradeLevel[]
-    }
-
-    // If subjects are specified, fetch their details
-    let subjects: Subject[] = []
-    if (subjectObjectIds.length > 0) {
-      const subjectsCollection = schoolDb.collection<Subject>('subjects')
-      subjects = await subjectsCollection
-        .find({ _id: { $in: subjectObjectIds } })
-        .project({ name: 1 })
-        .toArray() as Subject[]
-    }
-
-    // Return the created announcement with grade levels and subjects
-    return NextResponse.json({
-      ...validatedData,
-      _id: newAnnouncement.insertedId,
-      createdBy: session.user.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      gradeLevels,
-      subjects: subjects.map(subject => ({ _id: subject._id.toString(), name: subject.name }))
-    })
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 })
-    }
-    console.error('Error in POST /api/announcements:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    console.error('Error creating announcement:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 

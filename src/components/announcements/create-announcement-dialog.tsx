@@ -24,11 +24,6 @@ export function CreateAnnouncementDialog() {
   const router = useRouter()
 
   const onSubmit = async (data: AnnouncementFormValues) => {
-    if (!session?.user?.schoolId) {
-      toast.error("No school ID found")
-      return
-    }
-
     try {
       setIsLoading(true)
       console.log('Creating announcement with data:', data)
@@ -36,7 +31,7 @@ export function CreateAnnouncementDialog() {
       const requestData = {
         ...data,
         schoolId: session.user.schoolId,
-        startDate: new Date().toISOString(), // Add current date as startDate
+        startDate: new Date().toISOString(),
       };
       console.log('Sending request with data:', requestData);
 
@@ -53,6 +48,11 @@ export function CreateAnnouncementDialog() {
       console.log('Response data:', responseData);
 
       if (!response.ok) {
+        if (Array.isArray(responseData.error)) {
+          throw new Error(responseData.error.map((err: any) => 
+            `${err.path}: ${err.message}`
+          ).join(', '))
+        }
         throw new Error(responseData.error || 'Failed to create announcement')
       }
 
