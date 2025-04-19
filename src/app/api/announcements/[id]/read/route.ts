@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
 export async function PUT(
-  req: NextRequest,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -16,7 +16,8 @@ export async function PUT(
     }
 
     // Get and validate the announcement ID
-    const { id } = params
+    const { id } = await Promise.resolve(params)
+    
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid announcement ID' }, { status: 400 })
     }
@@ -45,9 +46,6 @@ export async function PUT(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error marking announcement as read:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -35,7 +35,8 @@ export function CreateAnnouncementDialog() {
 
       const requestData = {
         ...data,
-        schoolId: session.user.schoolId
+        schoolId: session.user.schoolId,
+        startDate: new Date().toISOString(), // Add current date as startDate
       };
       console.log('Sending request with data:', requestData);
 
