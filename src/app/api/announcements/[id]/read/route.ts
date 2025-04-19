@@ -4,9 +4,14 @@ import { authOptions } from "@/lib/auth"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
+type ContextWithParams = {
+  params: { id: string };
+  [key: string]: unknown;
+};
+
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: ContextWithParams
 ) {
   try {
     // Check authentication
