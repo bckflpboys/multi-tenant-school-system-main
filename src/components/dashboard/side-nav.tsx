@@ -31,7 +31,7 @@ const mockUser = {
   schoolId: '123',
   subscription: {
     schoolId: '123',
-    tier: 'enterprise' as const,  // Changed to enterprise tier for maximum access
+    tier: 'standard' as const,  // Changed from 'enterprise' to 'standard' which is a valid tier
     features: {
       // Enable all features
       dashboard: true,
