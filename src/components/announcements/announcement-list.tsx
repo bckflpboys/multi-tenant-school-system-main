@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import {
   Card,
@@ -82,7 +82,7 @@ export function AnnouncementList() {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     try {
       setIsLoading(true)
       const params = new URLSearchParams({
@@ -103,7 +103,7 @@ export function AnnouncementList() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [session?.user?.schoolId, type, priority, search])
 
   const markAsRead = async (announcementId: string) => {
     try {
@@ -121,12 +121,11 @@ export function AnnouncementList() {
     await markAsRead(announcement._id)
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (session?.user?.schoolId) {
       fetchAnnouncements()
     }
-  }, [session, type, priority, search])
+  }, [session?.user?.schoolId, fetchAnnouncements])
 
   useEffect(() => {
     if (announcements.length > 0) {
