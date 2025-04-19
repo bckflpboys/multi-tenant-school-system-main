@@ -3,10 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import clientPromise from "@/lib/mongodb"
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest) {
   try {
     // Get user session
     const session = await getServerSession(authOptions)
@@ -14,19 +11,25 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get school ID from URL
+    const schoolId = req.nextUrl.pathname.split('/')[3]
+    if (!schoolId) {
+      return NextResponse.json({ error: 'School ID is required' }, { status: 400 })
+    }
+
     // Check if user has permission to view classes in this school
-    if (session.user.schoolId !== params.id && session.user.role !== 'super_admin') {
+    if (session.user.schoolId !== schoolId && session.user.role !== 'super_admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Get MongoDB client and connect to the school's database
     const client = await clientPromise
-    const schoolDb = client.db(`school-${params.id}`)
+    const schoolDb = client.db(`school-${schoolId}`)
     const classesCollection = schoolDb.collection('classes')
 
     // Get all classes for the school
     const classes = await classesCollection
-      .find({ schoolId: params.id })
+      .find({ schoolId })
       .sort({ createdAt: -1 })
       .toArray()
 
@@ -40,10 +43,7 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest) {
   try {
     // Get user session
     const session = await getServerSession(authOptions)
@@ -51,18 +51,24 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get school ID from URL
+    const schoolId = req.nextUrl.pathname.split('/')[3]
+    if (!schoolId) {
+      return NextResponse.json({ error: 'School ID is required' }, { status: 400 })
+    }
+
     // Check if user has permission to create class in this school
-    if (session.user.schoolId !== params.id && session.user.role !== 'super_admin') {
+    if (session.user.schoolId !== schoolId && session.user.role !== 'super_admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Get request body
-    const data = await request.json()
+    const data = await req.json()
     console.log('Creating class with data:', data)
 
     // Get MongoDB client and connect to the school's database
     const client = await clientPromise
-    const schoolDb = client.db(`school-${params.id}`)
+    const schoolDb = client.db(`school-${schoolId}`)
     const classesCollection = schoolDb.collection('classes')
 
     // Create new class
@@ -72,7 +78,7 @@ export async function POST(
       academicYear: data.academicYear,
       capacity: data.capacity,
       teachers: data.teachers || [],
-      schoolId: params.id,
+      schoolId,
       createdBy: session.user.id,
       createdAt: new Date(),
       updatedAt: new Date()
