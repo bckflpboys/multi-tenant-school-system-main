@@ -4,14 +4,9 @@ import { authOptions } from "@/lib/auth"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
-type ContextWithParams = {
-  params: { id: string };
-  [key: string]: unknown;
-};
-
 export async function PUT(
-  request: NextRequest,
-  context: ContextWithParams
+  req: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check authentication
@@ -21,7 +16,7 @@ export async function PUT(
     }
 
     // Get and validate the announcement ID
-    const { id } = await Promise.resolve(context.params)
+    const { id } = params
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid announcement ID' }, { status: 400 })
     }
