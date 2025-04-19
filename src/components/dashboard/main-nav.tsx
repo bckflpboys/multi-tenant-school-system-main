@@ -144,7 +144,7 @@ export function MainNav({
 
       {/* User Profile Dropdown */}
       <div className="ml-auto flex items-center gap-3">
-        {user && <NotificationButton userId={user.id} schoolId={user.schoolId} />}
+        {user && <NotificationButton userId={user.id} />}
         <div className="hidden md:flex flex-col items-end gap-0">
           <p className="text-base font-medium text-gray-900 leading-tight">
             {user?.name ? user.name.split(' ')[0] : 'Loading...'}

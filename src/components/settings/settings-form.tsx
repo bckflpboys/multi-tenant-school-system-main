@@ -33,7 +33,7 @@ interface SettingsFormProps {
 
 export function SettingsForm({ initialData, onSubmit, isLoading = false }: SettingsFormProps) {
   const { data: session } = useSession()
-  const [isFetching, setIsFetching] = useState(false)
+  const [ ] = useState(false)
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
@@ -59,14 +59,6 @@ export function SettingsForm({ initialData, onSubmit, isLoading = false }: Setti
 
   const handleSubmit = async (values: SettingsFormValues) => {
     onSubmit(values)
-  }
-
-  if (isFetching) {
-    return (
-      <div className="flex items-center justify-center p-6">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    )
   }
 
   return (
