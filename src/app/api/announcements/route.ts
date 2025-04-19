@@ -43,12 +43,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    if (!session.user.schoolId) {
+      return NextResponse.json({ error: 'School ID is required' }, { status: 400 })
+    }
+
     const body = await req.json()
     console.log('Received request body:', body)
     
     try {
+      // Add schoolId to body before validation
+      const dataToValidate = {
+        ...body,
+        schoolId: session.user.schoolId,
+      }
+      
       // Validate the request body
-      const validatedData = announcementFormSchema.parse(body)
+      const validatedData = announcementFormSchema.parse(dataToValidate)
       console.log('Validated data:', validatedData)
 
       // Verify user has permission for this school
@@ -72,7 +82,8 @@ export async function POST(req: Request) {
         subjectIds: subjectObjectIds,
         createdBy: session.user.id,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        readReceipts: {},
       }
 
       const result = await announcementsCollection.insertOne(newAnnouncement)
@@ -99,32 +110,26 @@ export async function POST(req: Request) {
 
       // Return the created announcement with grade levels and subjects
       return NextResponse.json({
+        message: 'Announcement created successfully',
+        id: result.insertedId,
         ...validatedData,
-        _id: result.insertedId,
-        createdBy: session.user.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         gradeLevels,
-        subjects: subjects.map(subject => ({ _id: subject._id.toString(), name: subject.name }))
+        subjects: subjects.map(subject => ({ _id: subject._id.toString(), name: subject.name })),
       })
-    } catch (validationError) {
-      console.error('Validation error:', validationError)
-      if (validationError instanceof ZodError) {
+    } catch (error) {
+      console.error('Validation or database error:', error)
+      if (error instanceof ZodError) {
         return NextResponse.json({ 
-          error: validationError.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message
-          }))
+          error: error.errors[0].message 
         }, { status: 400 })
       }
-      throw validationError
+      throw error
     }
   } catch (error) {
-    console.error('Error creating announcement:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Server error:', error)
+    return NextResponse.json({ 
+      error: 'Internal server error' 
+    }, { status: 500 })
   }
 }
 

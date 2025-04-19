@@ -83,7 +83,7 @@ export function AnnouncementForm({
       type: "general",
       targetAudience: ["all"],
       priority: "medium",
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toISOString(),
       gradeLevelIds: [],
       subjectIds: [],
       ...initialData,
@@ -138,14 +138,20 @@ export function AnnouncementForm({
     }
   }, [session])
 
-  const handleSubmit = async (data: AnnouncementFormValues) => {
-    console.log('Form submitted with:', data)
-    onSubmit(data)
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = form.getValues();
+    console.log('Form submitted with:', data);
+    onSubmit({
+      ...data,
+      startDate: new Date().toISOString(),
+      targetAudience: ["all"],
+    });
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8">
         <FormField
           control={form.control}
           name="title"

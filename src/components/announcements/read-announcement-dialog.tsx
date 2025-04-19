@@ -1,5 +1,9 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { toast } from "react-hot-toast"
 import {
   Dialog,
   DialogContent,
@@ -7,9 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
-import { Calendar, Clock, User } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Circle, CheckCircle2, Bell, Calendar, User, Clock, BookOpen } from "lucide-react"
 
 interface ReadAnnouncementDialogProps {
   announcement: {
@@ -17,11 +22,15 @@ interface ReadAnnouncementDialogProps {
     title: string
     content: string
     type: "general" | "academic" | "event" | "emergency"
+    targetAudience: string[]
+    startDate: string
+    endDate?: string
     priority: "low" | "medium" | "high"
     createdAt: string
     createdBy: string
     gradeLevels?: { _id: string; name: string }[]
     subjects?: { _id: string; name: string }[]
+    readReceipts?: { [key: string]: Date }
   } | null
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -45,15 +54,45 @@ export function ReadAnnouncementDialog({
   open,
   onOpenChange,
 }: ReadAnnouncementDialogProps) {
-  if (!announcement) return null
+  const [isLoading, setIsLoading] = useState(false)
+  const { data: session } = useSession()
+  const router = useRouter()
+
+  // If no announcement or session, don't render
+  if (!announcement || !session?.user?.id) return null
+
+  const handleMarkAsRead = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/announcements/${announcement._id}/read`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to mark announcement as read")
+      }
+
+      toast.success("Announcement marked as read")
+      router.refresh()
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error marking announcement as read:", error)
+      toast.error("Failed to mark announcement as read")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const isRead = announcement.readReceipts?.[session.user.id]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader className="sticky top-0 bg-white z-10 pb-4">
-          <DialogTitle className="text-2xl font-semibold">
-            {announcement.title}
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold">{announcement.title}</DialogTitle>
           <DialogDescription className="flex items-center gap-2 text-gray-600 mt-1">
             <User className="h-4 w-4 text-amber-500" />
             Posted by: {announcement.createdBy}
@@ -78,7 +117,7 @@ export function ReadAnnouncementDialog({
               {/* Date and Time */}
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Calendar className="h-4 w-4 text-amber-500" />
-                {format(new Date(announcement.createdAt), "PPP")}
+                {format(new Date(announcement.startDate), "PPP")}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Clock className="h-4 w-4 text-amber-500" />
@@ -120,6 +159,26 @@ export function ReadAnnouncementDialog({
               </div>
             )}
           </div>
+
+          {/* Mark as Read */}
+          {!isRead && (
+            <div className="flex justify-end">
+              <Button
+                onClick={handleMarkAsRead}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                {isLoading ? (
+                  "Marking as read..."
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    Mark as Read
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

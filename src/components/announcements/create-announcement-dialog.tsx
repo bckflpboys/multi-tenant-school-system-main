@@ -24,37 +24,39 @@ export function CreateAnnouncementDialog() {
   const router = useRouter()
 
   const handleSubmit = async (data: AnnouncementFormValues) => {
+    if (!session?.user?.schoolId) {
+      toast.error('No school ID found')
+      return
+    }
+
     try {
       setIsLoading(true)
       console.log('Creating announcement with data:', data)
 
       const requestData = {
         ...data,
-        schoolId: session?.user?.schoolId,
+        schoolId: session.user.schoolId,
         startDate: new Date().toISOString(),
-      };
-      console.log('Sending request with data:', requestData);
+        targetAudience: ["all"],
+      }
+      console.log('Sending request with data:', requestData)
 
-      const response = await fetch(`/api/announcements`, {
-        method: "POST",
+      const response = await fetch('/api/announcements', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestData),
       })
 
-      console.log('Response status:', response.status);
-      const responseData = await response.json();
-      console.log('Response data:', responseData);
-
+      const responseData = await response.json()
+      
       if (!response.ok) {
-        if (Array.isArray(responseData.error)) {
-          const errorMessage = responseData.error
-            .map((err: { message: string }) => err.message)
-            .join(', ');
-          throw new Error(errorMessage);
+        if (responseData.error) {
+          throw new Error(responseData.error)
+        } else {
+          throw new Error('Failed to create announcement')
         }
-        throw new Error(responseData.error || 'Failed to create announcement')
       }
 
       toast.success('Announcement created successfully')
