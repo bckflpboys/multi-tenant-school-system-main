@@ -138,15 +138,14 @@ export function AnnouncementForm({
     }
   }, [session])
 
-  const handleSubmit = () => {
-    const formData = form.getValues();
-    console.log('Submitting form with data:', formData);
-    onSubmit(formData);
-  };
+  const handleSubmit = async (data: AnnouncementFormValues) => {
+    console.log('Form submitted with:', data)
+    onSubmit(data)
+  }
 
   return (
     <Form {...form}>
-      <div className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="title"
@@ -171,10 +170,22 @@ export function AnnouncementForm({
                 <Textarea 
                   placeholder="Enter announcement content (minimum 10 characters)" 
                   className="min-h-[100px]" 
-                  {...field} 
+                  {...field}
+                  onBlur={(e) => {
+                    field.onBlur();
+                    if (e.target.value.length < 10) {
+                      form.setError("content", {
+                        type: "manual",
+                        message: "Content must be at least 10 characters"
+                      });
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage />
+              <p className="text-xs text-muted-foreground">
+                {field.value?.length || 0}/10 characters minimum
+              </p>
             </FormItem>
           )}
         />
@@ -365,13 +376,13 @@ export function AnnouncementForm({
         />
 
         <Button 
-          onClick={handleSubmit} 
+          type="submit" 
           disabled={isLoading}
           className="w-full"
         >
           {isLoading ? "Saving..." : "Save Announcement"}
         </Button>
-      </div>
+      </form>
     </Form>
   )
 }

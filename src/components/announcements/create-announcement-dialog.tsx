@@ -17,19 +17,13 @@ import {
 import { AnnouncementForm } from "./announcement-form"
 import type { AnnouncementFormValues } from "@/lib/validations/announcement"
 
-interface ValidationError {
-  code: string
-  message: string
-  path: string[]
-}
-
 export function CreateAnnouncementDialog() {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { data: session } = useSession()
   const router = useRouter()
 
-  const onSubmit = async (data: AnnouncementFormValues) => {
+  const handleSubmit = async (data: AnnouncementFormValues) => {
     try {
       setIsLoading(true)
       console.log('Creating announcement with data:', data)
@@ -56,7 +50,7 @@ export function CreateAnnouncementDialog() {
       if (!response.ok) {
         if (Array.isArray(responseData.error)) {
           const errorMessage = responseData.error
-            .map((err: ValidationError) => err.message)
+            .map((err: { message: string }) => err.message)
             .join(', ');
           throw new Error(errorMessage);
         }
@@ -89,7 +83,7 @@ export function CreateAnnouncementDialog() {
             Create a new announcement to share with your school community.
           </DialogDescription>
         </DialogHeader>
-        <AnnouncementForm onSubmit={onSubmit} isLoading={isLoading} />
+        <AnnouncementForm onSubmit={handleSubmit} isLoading={isLoading} />
       </DialogContent>
     </Dialog>
   )

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "react-hot-toast"
 import { LogOut, Settings, User } from "lucide-react"
 import { NotificationButton } from "@/components/notifications/notification-button"
+import { useSession } from "next-auth/react"
 
 interface UserData {
   id: string
@@ -37,6 +38,7 @@ export function MainNav({
 }: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname()
   const router = useRouter()
+  const { data: session } = useSession()
   const [user, setUser] = useState<UserData | null>(null)
 
   useEffect(() => {
@@ -160,20 +162,26 @@ export function MainNav({
               className="relative h-10 w-10 rounded-full border-2 border-gray-200 bg-white hover:border-blue-500 transition-colors"
             >
               <Avatar className="h-9 w-9">
-                <AvatarImage src="/avatars/01.png" alt={user?.name || 'User'} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-xl font-medium text-white">
-                  {user?.name ? user.name.split(' ')[0].slice(0, 2).toUpperCase() : '...'}
-                </AvatarFallback>
+                {session?.user?.image ? (
+                  <AvatarImage src={session.user.image} alt={session.user.name || ""} />
+                ) : (
+                  <AvatarFallback>
+                    {session?.user?.name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                )}
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80 bg-gradient-to-br from-gray-50 to-gray-100/50 border-2 border-gray-200 shadow-lg rounded-xl p-2" align="end" forceMount>
             <div className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-200 shadow-md">
               <Avatar className="h-16 w-16 border-2 border-blue-100">
-                <AvatarImage src="/avatars/01.png" alt={user?.name || 'User'} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-xl font-medium text-white">
-                  {user?.name ? user.name.split(' ')[0].slice(0, 2).toUpperCase() : '...'}
-                </AvatarFallback>
+                {session?.user?.image ? (
+                  <AvatarImage src={session.user.image} alt={session.user.name || ""} />
+                ) : (
+                  <AvatarFallback>
+                    {session?.user?.name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                )}
               </Avatar>
               <div className="flex flex-col space-y-1">
                 <p className="text-lg font-semibold leading-none text-gray-900">
