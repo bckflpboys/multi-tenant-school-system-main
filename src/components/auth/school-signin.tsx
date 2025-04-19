@@ -56,6 +56,7 @@ export function SchoolSignIn() {
   // Fetch schools on component mount
   useEffect(() => {
     const fetchSchools = async () => {
+      setLoading(true)
       try {
         const response = await fetch('/api/schools', {
           method: 'GET',
@@ -78,6 +79,8 @@ export function SchoolSignIn() {
       } catch (error) {
         console.error('Error fetching schools:', error)
         toast.error('Failed to load schools')
+      } finally {
+        setLoading(false)
       }
     }
     fetchSchools()
@@ -132,104 +135,110 @@ export function SchoolSignIn() {
         <h1 className="text-2xl font-bold">Sign In</h1>
         <p className="text-gray-500">Enter your credentials to access your account</p>
       </div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="schoolId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>School</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+      {loading ? (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      ) : (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="schoolId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>School</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="text-gray-900">
+                        <SelectValue placeholder="Select a school" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {schools.map((school) => (
+                        <SelectItem key={school._id} value={school._id} className="text-gray-900">
+                          {school.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="userType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>I am a</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="text-gray-900">
+                        <SelectValue placeholder="Select user type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="student" className="text-gray-900">Student</SelectItem>
+                      <SelectItem value="teacher" className="text-gray-900">Teacher</SelectItem>
+                      <SelectItem value="principal" className="text-gray-900">Principal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <SelectTrigger className="text-gray-900">
-                      <SelectValue placeholder="Select a school" />
-                    </SelectTrigger>
+                    <Input placeholder="Enter your email" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    {schools.map((school) => (
-                      <SelectItem key={school._id} value={school._id} className="text-gray-900">
-                        {school.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="userType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>I am a</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="text-gray-900">
-                      <SelectValue placeholder="Select user type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="student" className="text-gray-900">Student</SelectItem>
-                    <SelectItem value="teacher" className="text-gray-900">Teacher</SelectItem>
-                    <SelectItem value="principal" className="text-gray-900">Principal</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <div className="relative">
-                  <FormControl>
-                    <Input 
-                      type={showPassword ? "text" : "password"} 
-                      placeholder="Enter your password" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-500" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-500" />
-                    )}
-                  </Button>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
-          </Button>
-        </form>
-      </Form>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <div className="relative">
+                    <FormControl>
+                      <Input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="Enter your password" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
+        </Form>
+      )}
     </div>
   )
 }

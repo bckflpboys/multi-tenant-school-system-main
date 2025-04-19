@@ -19,13 +19,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { toast } from "react-hot-toast"
-import { Bell, LogOut, Settings, User } from "lucide-react"
+import { LogOut, Settings, User } from "lucide-react"
+import { NotificationButton } from "@/components/notifications/notification-button"
 
 interface UserData {
-  name: string;
-  email: string;
-  userType: 'super-admin' | 'student' | 'teacher' | 'principal';
-  schoolName?: string;
+  id: string
+  name: string
+  email: string
+  userType: 'super-admin' | 'student' | 'teacher' | 'principal'
+  schoolId: string
+  schoolName?: string
 }
 
 export function MainNav({
@@ -141,10 +144,7 @@ export function MainNav({
 
       {/* User Profile Dropdown */}
       <div className="ml-auto flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5 text-gray-500" />
-          <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
-        </Button>
+        {user && <NotificationButton userId={user.id} schoolId={user.schoolId} />}
         <div className="hidden md:flex flex-col items-end gap-0">
           <p className="text-base font-medium text-gray-900 leading-tight">
             {user?.name ? user.name.split(' ')[0] : 'Loading...'}
@@ -161,7 +161,7 @@ export function MainNav({
             >
               <Avatar className="h-9 w-9">
                 <AvatarImage src="/avatars/01.png" alt={user?.name || 'User'} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-medium">
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-xl font-medium text-white">
                   {user?.name ? user.name.split(' ')[0].slice(0, 2).toUpperCase() : '...'}
                 </AvatarFallback>
               </Avatar>
