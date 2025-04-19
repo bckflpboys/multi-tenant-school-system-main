@@ -50,6 +50,7 @@ export function DisciplineList({ schoolId }: DisciplineListProps) {
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchDisciplineRecords()
   }, [schoolId])

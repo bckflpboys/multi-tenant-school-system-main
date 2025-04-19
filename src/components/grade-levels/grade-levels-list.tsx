@@ -44,6 +44,7 @@ export function GradeLevelsList({ schoolId }: GradeLevelsListProps) {
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchGradeLevels()
   }, [schoolId])

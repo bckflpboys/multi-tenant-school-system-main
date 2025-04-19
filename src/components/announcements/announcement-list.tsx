@@ -121,6 +121,7 @@ export function AnnouncementList() {
     await markAsRead(announcement._id)
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (session?.user?.schoolId) {
       fetchAnnouncements()
