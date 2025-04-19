@@ -4,6 +4,7 @@ export type UserRole =
   | 'school_admin'     // School principal/administrator
   | 'staff'           // School administrative staff
   | 'teacher'         // Regular teachers
+  | 'parent'          // Parents/Guardians
   | 'student';        // Students
 
 // Define permissions for each role
@@ -42,6 +43,13 @@ export const rolePermissions = {
     'manage_attendance',
     'view_students',
     'view_subjects'
+  ],
+  parent: [
+    'view_child_grades',
+    'view_child_attendance',
+    'view_child_schedule',
+    'view_child_subjects',
+    'view_announcements'
   ],
   student: [
     'view_own_grades',

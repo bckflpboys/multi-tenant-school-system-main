@@ -30,7 +30,7 @@ const formSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   schoolId: z.string().min(1, 'Please select a school'),
-  userType: z.enum(['student', 'teacher', 'principal'], {
+  userType: z.enum(['student', 'teacher', 'principal', 'staff', 'parent'], {
     required_error: 'Please select a user type',
   }),
 })
@@ -117,6 +117,12 @@ export function SchoolSignIn() {
         case 'student':
           router.push('/dashboard/courses')
           break
+        case 'staff':
+          router.push('/dashboard/staff')
+          break
+        case 'parent':
+          router.push('/dashboard/children')
+          break
         default:
           router.push('/dashboard')
       }
@@ -187,6 +193,8 @@ export function SchoolSignIn() {
                         <SelectItem value="student">Student</SelectItem>
                         <SelectItem value="teacher">Teacher</SelectItem>
                         <SelectItem value="principal">Principal</SelectItem>
+                        <SelectItem value="staff">Staff</SelectItem>
+                        <SelectItem value="parent">Parent/Guardian</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
