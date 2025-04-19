@@ -1,6 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { toast } from "react-hot-toast"
+import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,12 +14,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus } from "lucide-react"
 import { AnnouncementForm } from "./announcement-form"
-import { type AnnouncementFormValues } from "@/lib/validations/announcement"
-import { useSession } from "next-auth/react"
-import { toast } from "react-hot-toast"
-import { useRouter } from "next/navigation"
+import type { AnnouncementFormValues } from "@/lib/validations/announcement"
+
+interface ValidationError {
+  code: string
+  message: string
+  path: string[]
+}
 
 export function CreateAnnouncementDialog() {
   const [open, setOpen] = useState(false)
@@ -30,7 +36,7 @@ export function CreateAnnouncementDialog() {
 
       const requestData = {
         ...data,
-        schoolId: session.user.schoolId,
+        schoolId: session?.user?.schoolId,
         startDate: new Date().toISOString(),
       };
       console.log('Sending request with data:', requestData);
@@ -49,9 +55,10 @@ export function CreateAnnouncementDialog() {
 
       if (!response.ok) {
         if (Array.isArray(responseData.error)) {
-          throw new Error(responseData.error.map((err: any) => 
-            `${err.path}: ${err.message}`
-          ).join(', '))
+          const errorMessage = responseData.error
+            .map((err: ValidationError) => err.message)
+            .join(', ');
+          throw new Error(errorMessage);
         }
         throw new Error(responseData.error || 'Failed to create announcement')
       }
@@ -75,11 +82,11 @@ export function CreateAnnouncementDialog() {
           Create Announcement
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Announcement</DialogTitle>
           <DialogDescription>
-            Create a new announcement for your school community.
+            Create a new announcement to share with your school community.
           </DialogDescription>
         </DialogHeader>
         <AnnouncementForm onSubmit={onSubmit} isLoading={isLoading} />

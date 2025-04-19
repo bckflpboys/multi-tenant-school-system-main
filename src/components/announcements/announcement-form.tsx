@@ -152,7 +152,7 @@ export function AnnouncementForm({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Title</FormLabel>
+              <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input placeholder="Enter announcement title" {...field} />
               </FormControl>
@@ -166,12 +166,12 @@ export function AnnouncementForm({
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Content</FormLabel>
+              <FormLabel>Content</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Enter announcement content"
-                  className="min-h-[100px]"
-                  {...field}
+                <Textarea 
+                  placeholder="Enter announcement content (minimum 10 characters)" 
+                  className="min-h-[100px]" 
+                  {...field} 
                 />
               </FormControl>
               <FormMessage />
@@ -185,7 +185,7 @@ export function AnnouncementForm({
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-black font-medium">Type</FormLabel>
+                <FormLabel>Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -210,7 +210,7 @@ export function AnnouncementForm({
             name="priority"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-black font-medium">Priority</FormLabel>
+                <FormLabel>Priority</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -237,7 +237,7 @@ export function AnnouncementForm({
             name="startDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-black font-medium">Start Date</FormLabel>
+                <FormLabel>Start Date</FormLabel>
                 <FormControl>
                   <Input
                     type="date"
@@ -255,7 +255,7 @@ export function AnnouncementForm({
             name="endDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-black font-medium">End Date (Optional)</FormLabel>
+                <FormLabel>End Date (Optional)</FormLabel>
                 <FormControl>
                   <Input
                     type="date"
@@ -274,7 +274,7 @@ export function AnnouncementForm({
           name="targetAudience"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Target Audience</FormLabel>
+              <FormLabel>Target Audience</FormLabel>
               <div className="flex flex-wrap gap-2">
                 {targetAudiences.map((audience) => (
                   <Button
@@ -303,7 +303,7 @@ export function AnnouncementForm({
           name="gradeLevelIds"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Grade Levels (Optional)</FormLabel>
+              <FormLabel>Grade Levels (Optional)</FormLabel>
               <div className="flex flex-wrap gap-2">
                 {isLoadingGradeLevels ? (
                   <div>Loading...</div>
@@ -336,7 +336,7 @@ export function AnnouncementForm({
           name="subjectIds"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Subjects (Optional)</FormLabel>
+              <FormLabel>Subjects (Optional)</FormLabel>
               <div className="flex flex-wrap gap-2">
                 {isLoadingSubjects ? (
                   <div>Loading...</div>
