@@ -28,7 +28,7 @@ interface ReadAnnouncementDialogProps {
     createdBy: string
     gradeLevels?: { _id: string; name: string }[]
     subjects?: { _id: string; name: string }[]
-    readReceipts?: { [key: string]: Date }
+    readReceipts?: { [key: string]: { readAt: string } }
   } | null
   open: boolean
   onOpenChange: (open: boolean) => void
