@@ -44,6 +44,15 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/announcements',
     '/dashboard/subjects'
   ],
+  parent: [
+    '/dashboard',
+    '/dashboard/children',
+    '/dashboard/grades',
+    '/dashboard/attendance',
+    '/dashboard/schedule',
+    '/dashboard/announcements',
+    '/dashboard/messages'
+  ],
   student: [
     '/dashboard/grades',
     '/dashboard/attendance',
@@ -102,6 +111,8 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/dashboard/classes', request.url))
         case 'student':
           return NextResponse.redirect(new URL('/dashboard/grades', request.url))
+        case 'parent':
+          return NextResponse.redirect(new URL('/dashboard/children', request.url))
         default:
           return NextResponse.redirect(new URL('/', request.url))
       }
