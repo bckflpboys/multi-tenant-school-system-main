@@ -3,14 +3,10 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import clientPromise from "@/lib/mongodb"
 
-type RouteProps = {
-  params: {
-    id: string
-  }
-  searchParams: { [key: string]: string | string[] | undefined }
-}
-
-export async function GET(request: NextRequest, { params }: RouteProps) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     // Get user session
     const session = await getServerSession(authOptions)
@@ -44,7 +40,10 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
   }
 }
 
-export async function POST(request: NextRequest, { params }: RouteProps) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     // Get user session
     const session = await getServerSession(authOptions)
