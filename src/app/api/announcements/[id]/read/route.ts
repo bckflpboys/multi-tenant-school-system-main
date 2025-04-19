@@ -1,16 +1,10 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
-interface Params {
-  params: {
-    id: string
-  }
-}
-
-export async function PUT(request: Request, context: Params) {
+export async function PUT(req: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions)
@@ -18,11 +12,10 @@ export async function PUT(request: Request, context: Params) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get and validate the announcement ID
-    const params = await context.params
-    const id = params.id
+    // Get the ID from URL
+    const announcementId = req.nextUrl.pathname.split('/')[3]
     
-    if (!ObjectId.isValid(id)) {
+    if (!announcementId || !ObjectId.isValid(announcementId)) {
       return NextResponse.json({ error: 'Invalid announcement ID' }, { status: 400 })
     }
 
@@ -33,7 +26,7 @@ export async function PUT(request: Request, context: Params) {
 
     // Update the read receipt
     const result = await announcementsCollection.updateOne(
-      { _id: new ObjectId(id) },
+      { _id: new ObjectId(announcementId) },
       {
         $set: {
           [`readReceipts.${session.user.id}`]: {
