@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FaChalkboardTeacher, FaBook, FaClock, FaMapMarkerAlt, FaUsers, FaArrowRight } from 'react-icons/fa'
@@ -58,7 +58,7 @@ export function LessonsList({ schoolId }: LessonsListProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true)
       const [lessonsRes, classesRes, subjectsRes, teachersRes] = await Promise.all([
@@ -89,11 +89,11 @@ export function LessonsList({ schoolId }: LessonsListProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [schoolId])
 
   useEffect(() => {
     fetchData()
-  }, [schoolId])
+  }, [fetchData])
 
   const getStatusColor = (status: Lesson['status']) => {
     switch (status) {

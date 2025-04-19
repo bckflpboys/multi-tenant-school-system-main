@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,7 +34,7 @@ export function DisciplineList({ schoolId }: DisciplineListProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchDisciplineRecords = async () => {
+  const fetchDisciplineRecords = useCallback(async () => {
     try {
       setIsLoading(true)
       const response = await fetch(`/api/discipline?schoolId=${schoolId}`)
@@ -48,11 +48,11 @@ export function DisciplineList({ schoolId }: DisciplineListProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [schoolId])
 
   useEffect(() => {
     fetchDisciplineRecords()
-  }, [schoolId])
+  }, [fetchDisciplineRecords])
 
   const getSeverityColor = (severity: DisciplineRecord['severity']) => {
     switch (severity) {

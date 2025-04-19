@@ -1,6 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { toast } from "react-hot-toast"
+import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,12 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus } from "lucide-react"
 import { AnnouncementForm } from "./announcement-form"
-import { type AnnouncementFormValues } from "@/lib/validations/announcement"
-import { useSession } from "next-auth/react"
-import { toast } from "react-hot-toast"
-import { useRouter } from "next/navigation"
+import type { AnnouncementFormValues } from "@/lib/validations/announcement"
 
 export function CreateAnnouncementDialog() {
   const [open, setOpen] = useState(false)
@@ -23,9 +23,9 @@ export function CreateAnnouncementDialog() {
   const { data: session } = useSession()
   const router = useRouter()
 
-  const onSubmit = async (data: AnnouncementFormValues) => {
+  const handleSubmit = async (data: AnnouncementFormValues) => {
     if (!session?.user?.schoolId) {
-      toast.error("No school ID found")
+      toast.error('No school ID found')
       return
     }
 
@@ -35,24 +35,28 @@ export function CreateAnnouncementDialog() {
 
       const requestData = {
         ...data,
-        schoolId: session.user.schoolId
-      };
-      console.log('Sending request with data:', requestData);
+        schoolId: session.user.schoolId,
+        startDate: new Date().toISOString(),
+        targetAudience: ["all"],
+      }
+      console.log('Sending request with data:', requestData)
 
-      const response = await fetch(`/api/announcements`, {
-        method: "POST",
+      const response = await fetch('/api/announcements', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestData),
       })
 
-      console.log('Response status:', response.status);
-      const responseData = await response.json();
-      console.log('Response data:', responseData);
-
+      const responseData = await response.json()
+      
       if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to create announcement')
+        if (responseData.error) {
+          throw new Error(responseData.error)
+        } else {
+          throw new Error('Failed to create announcement')
+        }
       }
 
       toast.success('Announcement created successfully')
@@ -74,14 +78,14 @@ export function CreateAnnouncementDialog() {
           Create Announcement
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Announcement</DialogTitle>
           <DialogDescription>
-            Create a new announcement for your school community.
+            Create a new announcement to share with your school community.
           </DialogDescription>
         </DialogHeader>
-        <AnnouncementForm onSubmit={onSubmit} isLoading={isLoading} />
+        <AnnouncementForm onSubmit={handleSubmit} isLoading={isLoading} />
       </DialogContent>
     </Dialog>
   )

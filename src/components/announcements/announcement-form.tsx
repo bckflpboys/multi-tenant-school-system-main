@@ -83,7 +83,7 @@ export function AnnouncementForm({
       type: "general",
       targetAudience: ["all"],
       priority: "medium",
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toISOString(),
       gradeLevelIds: [],
       subjectIds: [],
       ...initialData,
@@ -138,21 +138,26 @@ export function AnnouncementForm({
     }
   }, [session])
 
-  const handleSubmit = () => {
-    const formData = form.getValues();
-    console.log('Submitting form with data:', formData);
-    onSubmit(formData);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = form.getValues();
+    console.log('Form submitted with:', data);
+    onSubmit({
+      ...data,
+      startDate: new Date().toISOString(),
+      targetAudience: ["all"],
+    });
   };
 
   return (
     <Form {...form}>
-      <div className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8">
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Title</FormLabel>
+              <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input placeholder="Enter announcement title" {...field} />
               </FormControl>
@@ -166,15 +171,27 @@ export function AnnouncementForm({
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Content</FormLabel>
+              <FormLabel>Content</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Enter announcement content"
-                  className="min-h-[100px]"
+                <Textarea 
+                  placeholder="Enter announcement content (minimum 10 characters)" 
+                  className="min-h-[100px]" 
                   {...field}
+                  onBlur={(e) => {
+                    field.onBlur();
+                    if (e.target.value.length < 10) {
+                      form.setError("content", {
+                        type: "manual",
+                        message: "Content must be at least 10 characters"
+                      });
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage />
+              <p className="text-xs text-muted-foreground">
+                {field.value?.length || 0}/10 characters minimum
+              </p>
             </FormItem>
           )}
         />
@@ -185,7 +202,7 @@ export function AnnouncementForm({
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-black font-medium">Type</FormLabel>
+                <FormLabel>Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -210,7 +227,7 @@ export function AnnouncementForm({
             name="priority"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-black font-medium">Priority</FormLabel>
+                <FormLabel>Priority</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -237,7 +254,7 @@ export function AnnouncementForm({
             name="startDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-black font-medium">Start Date</FormLabel>
+                <FormLabel>Start Date</FormLabel>
                 <FormControl>
                   <Input
                     type="date"
@@ -255,7 +272,7 @@ export function AnnouncementForm({
             name="endDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-black font-medium">End Date (Optional)</FormLabel>
+                <FormLabel>End Date (Optional)</FormLabel>
                 <FormControl>
                   <Input
                     type="date"
@@ -274,7 +291,7 @@ export function AnnouncementForm({
           name="targetAudience"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Target Audience</FormLabel>
+              <FormLabel>Target Audience</FormLabel>
               <div className="flex flex-wrap gap-2">
                 {targetAudiences.map((audience) => (
                   <Button
@@ -303,7 +320,7 @@ export function AnnouncementForm({
           name="gradeLevelIds"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Grade Levels (Optional)</FormLabel>
+              <FormLabel>Grade Levels (Optional)</FormLabel>
               <div className="flex flex-wrap gap-2">
                 {isLoadingGradeLevels ? (
                   <div>Loading...</div>
@@ -336,7 +353,7 @@ export function AnnouncementForm({
           name="subjectIds"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black font-medium">Subjects (Optional)</FormLabel>
+              <FormLabel>Subjects (Optional)</FormLabel>
               <div className="flex flex-wrap gap-2">
                 {isLoadingSubjects ? (
                   <div>Loading...</div>
@@ -365,13 +382,13 @@ export function AnnouncementForm({
         />
 
         <Button 
-          onClick={handleSubmit} 
+          type="submit" 
           disabled={isLoading}
           className="w-full"
         >
           {isLoading ? "Saving..." : "Save Announcement"}
         </Button>
-      </div>
+      </form>
     </Form>
   )
 }

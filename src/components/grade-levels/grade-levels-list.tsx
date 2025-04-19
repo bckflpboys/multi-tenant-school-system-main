@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
@@ -28,7 +28,7 @@ export function GradeLevelsList({ schoolId }: GradeLevelsListProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchGradeLevels = async () => {
+  const fetchGradeLevels = useCallback(async () => {
     try {
       setIsLoading(true)
       const response = await fetch(`/api/grade-levels?schoolId=${schoolId}`)
@@ -42,11 +42,11 @@ export function GradeLevelsList({ schoolId }: GradeLevelsListProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [schoolId])
 
   useEffect(() => {
     fetchGradeLevels()
-  }, [schoolId])
+  }, [fetchGradeLevels])
 
   if (isLoading) {
     return (

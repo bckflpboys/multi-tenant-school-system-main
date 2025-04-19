@@ -3,6 +3,8 @@ import { Types } from "mongoose"
 import clientPromise from "@/lib/mongodb"
 import { z } from "zod"
 import { schoolApiSchema } from "@/lib/validations/school"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 // Define the school document type with MongoDB types
 interface SchoolDoc extends Omit<z.infer<typeof schoolApiSchema>, '_id'> {
@@ -27,43 +29,48 @@ interface SchoolResponse {
   };
 }
 
-export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function GET(req: NextRequest) {
   try {
-    const { id } = context.params;
+    // Get user session
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    // Get the client
-    const client = await clientPromise;
-    const systemDb = client.db();
+    // Get school ID from URL
+    const schoolId = req.nextUrl.pathname.split('/')[3]
+    if (!schoolId) {
+      return NextResponse.json({ error: 'School ID is required' }, { status: 400 })
+    }
 
-    // Get the schools collection with type
-    const schoolsCollection = systemDb.collection<SchoolDoc>('schools');
-    
+    // Check if user has permission to view this school
+    if (session.user.schoolId !== schoolId && session.user.role !== 'super_admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Get MongoDB client and connect to the database
+    const client = await clientPromise
+    const systemDb = client.db()
+    const schoolsCollection = systemDb.collection<SchoolDoc>('schools')
+
     // Try to find school by ObjectId
     const school = await schoolsCollection.findOne({
-      _id: new Types.ObjectId(id)
-    });
-
-    console.log('Found school:', school); // Debug log
+      _id: new Types.ObjectId(schoolId)
+    })
 
     if (!school) {
-      return NextResponse.json(
-        { message: "School not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'School not found' }, { status: 404 })
     }
 
     // Get stats from the school's database
-    const schoolDb = client.db(`school-${id}`);
+    const schoolDb = client.db(`school-${schoolId}`)
 
     // Get counts from collections
     const [usersCount, classesCount, subjectsCount] = await Promise.all([
       schoolDb.collection('users').countDocuments(),
       schoolDb.collection('classes').countDocuments(),
       schoolDb.collection('subjects').countDocuments()
-    ]);
+    ])
 
     // Convert MongoDB document to response format
     const response: SchoolResponse = {
@@ -79,14 +86,14 @@ export async function GET(
         classes: classesCount,
         subjects: subjectsCount
       }
-    };
+    }
 
-    return NextResponse.json(response);
+    return NextResponse.json(response)
   } catch (error) {
-    console.error('Error in GET /api/schools/[id]:', error);
+    console.error('Error in GET /api/schools/[id]:', error)
     return NextResponse.json(
-      { message: "Internal server error" },
+      { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }

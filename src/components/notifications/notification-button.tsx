@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -35,10 +35,9 @@ interface Announcement {
 
 interface NotificationButtonProps {
   userId: string
-  schoolId: string
 }
 
-export function NotificationButton({ userId}: NotificationButtonProps) {
+export function NotificationButton({ userId }: NotificationButtonProps) {
   const { data: session } = useSession()
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,7 +45,7 @@ export function NotificationButton({ userId}: NotificationButtonProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false)
 
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -69,13 +68,13 @@ export function NotificationButton({ userId}: NotificationButtonProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [session?.user?.schoolId])
 
   useEffect(() => {
     if (session?.user?.schoolId) {
       fetchAnnouncements()
     }
-  }, [session])
+  }, [session?.user?.schoolId, fetchAnnouncements])
 
   const markAsRead = async (announcementId: string) => {
     try {
