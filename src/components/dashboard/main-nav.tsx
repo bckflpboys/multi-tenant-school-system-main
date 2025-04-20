@@ -18,12 +18,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { toast } from "react-hot-toast"
 import { LogOut, Settings, User, Shield, Building2, Mail, Bell, Menu } from "lucide-react"
 import { NotificationButton } from "@/components/notifications/notification-button"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
+import { SideNav } from "./side-nav"
 
 interface UserData {
   id: string
@@ -171,13 +172,13 @@ export function MainNav({
       {/* Mobile Navigation */}
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden ml-2">
+          <Button variant="ghost" size="icon" className="md:hidden ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] p-0">
-          <div className="flex flex-col h-full">
-            <div className="p-4 border-b">
+        <SheetContent side="left" className="w-[300px] p-0 bg-white/95 backdrop-blur-sm">
+          <SheetHeader className="p-4 border-b border-gray-100">
+            <SheetTitle asChild>
               <Link href="/dashboard" className="flex items-center gap-2">
                 <div className="relative h-8 w-8">
                   <Image
@@ -192,30 +193,13 @@ export function MainNav({
                   Praxix
                 </span>
               </Link>
-            </div>
-            <nav className="flex-1 p-4">
-              <div className="flex flex-col space-y-1">
-                {routes
-                  .filter(route => route.show !== false)
-                  .map((route) => (
-                    <Link
-                      key={route.href}
-                      href={route.href}
-                      className={cn(
-                        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all",
-                        route.active 
-                          ? "bg-blue-50 text-blue-600 shadow-sm" 
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                      )}
-                    >
-                      {route.label}
-                      {route.active && (
-                        <div className="h-1 w-1 rounded-full bg-blue-600" />
-                      )}
-                    </Link>
-                  ))}
-              </div>
-            </nav>
+            </SheetTitle>
+            <SheetDescription className="sr-only">
+              Navigation menu for mobile devices
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto">
+            <SideNav />
           </div>
         </SheetContent>
       </Sheet>
