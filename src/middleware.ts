@@ -22,7 +22,10 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/lessons',
     '/dashboard/announcements',
     '/dashboard/lessons/timetable',
-    '/dashboard/settings'
+    '/dashboard/settings',
+    '/dashboard/library/*',
+    '/dashboard/results',
+    '/dashboard/results/*'
   ],
   staff: [
     '/dashboard/students',
@@ -31,7 +34,10 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/classes',
     '/dashboard/examinations',
     '/dashboard/announcements',
-    '/dashboard/subjects'
+    '/dashboard/subjects',
+    '/dashboard/library/*',
+    '/dashboard/results',
+    '/dashboard/results/*'
   ],
   teacher: [
     '/dashboard/classes',
@@ -42,7 +48,10 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/lessons',
     '/dashboard/examinations',
     '/dashboard/announcements',
-    '/dashboard/subjects'
+    '/dashboard/subjects',
+    '/dashboard/library/*',
+    '/dashboard/results',
+    '/dashboard/results/*'
   ],
   parent: [
     '/dashboard',
@@ -51,7 +60,9 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/attendance',
     '/dashboard/schedule',
     '/dashboard/announcements',
-    '/dashboard/messages'
+    '/dashboard/messages',
+    '/dashboard/results',
+    '/dashboard/results/*'
   ],
   student: [
     '/dashboard/grades',
@@ -61,6 +72,9 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/lessons',
     '/dashboard/examinations',
     '/dashboard/announcements',
+    '/dashboard/results/*',
+    '/dashboard/library/*',
+    '/dashboard/results',
     '/dashboard/subjects'
   ]
 }

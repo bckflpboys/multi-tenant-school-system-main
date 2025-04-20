@@ -13,6 +13,8 @@ const badgeVariants = cva(
           "bg-gray-50 text-gray-600 ring-gray-500/10",
         destructive:
           "bg-red-50 text-red-700 ring-red-600/10",
+        success:
+          "bg-green-50 text-green-700 ring-green-600/10",
         outline: "text-gray-600 ring-gray-500/10",
       },
     },

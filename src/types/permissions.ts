@@ -14,12 +14,16 @@ export const rolePermissions = {
     'manage_super_admin_staff',
     'manage_system_settings',
     'view_all_schools',
-    'view_analytics'
+    'view_analytics',
+    'manage_library',
+    'manage_results'
   ],
   super_admin_staff: [
     'view_all_schools',
     'view_analytics',
-    'support_schools'
+    'support_schools',
+    'view_library',
+    'view_results'
   ],
   school_admin: [
     'manage_staff',
@@ -28,34 +32,42 @@ export const rolePermissions = {
     'manage_classes',
     'manage_subjects',
     'view_school_analytics',
-    'manage_school_settings'
+    'manage_school_settings',
+    'manage_library',
+    'manage_results'
   ],
   staff: [
     'manage_students',
     'manage_attendance',
     'manage_grades',
     'view_classes',
-    'view_subjects'
+    'view_subjects',
+    'manage_library',
+    'manage_results'
   ],
   teacher: [
     'manage_own_classes',
     'manage_grades',
     'manage_attendance',
     'view_students',
-    'view_subjects'
+    'view_subjects',
+    'view_library',
+    'manage_results'
   ],
   parent: [
     'view_child_grades',
     'view_child_attendance',
     'view_child_schedule',
     'view_child_subjects',
-    'view_announcements'
+    'view_announcements',
+    'view_child_results'
   ],
   student: [
     'view_own_grades',
     'view_own_attendance',
     'view_own_schedule',
-    'view_own_subjects'
+    'view_own_subjects',
+    'view_own_results'
   ]
 } as const;
 
@@ -149,7 +161,14 @@ export const FEATURES: { [key: string]: Feature } = {
   homework: {
     id: 'homework',
     name: 'Homework Management',
-    description: 'Manage and track student homework',
+    description: 'Manage and track homework assignments',
+    tier: 'basic',
+    enabled: true,
+  },
+  results: {
+    id: 'results',
+    name: 'Results Management',
+    description: 'Manage and view student results',
     tier: 'basic',
     enabled: true,
   },
@@ -241,8 +260,8 @@ export const FEATURES: { [key: string]: Feature } = {
   },
   library: {
     id: 'library',
-    name: 'Library System',
-    description: 'Manage school library resources',
+    name: 'Library Management',
+    description: 'Manage library books and resources',
     tier: 'standard',
     enabled: true,
   },

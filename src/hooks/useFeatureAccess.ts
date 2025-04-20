@@ -38,6 +38,8 @@ export function useFeatureAccess({
         school_life: true,
         grade_levels: true,
         subjects: true,
+        results: true,
+        library: true,
       };
       
       setAccessibleFeatures(allFeatures);
