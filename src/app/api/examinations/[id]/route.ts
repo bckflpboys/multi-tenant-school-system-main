@@ -34,7 +34,8 @@ export async function DELETE(
       { 
         $set: { 
           status: 'deleted',
-          updatedAt: new Date()
+          deletedAt: new Date(),
+          deletedBy: session.user.id
         } 
       }
     )
@@ -51,7 +52,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting examination:', error)
     return NextResponse.json(
-      { error: 'Failed to delete examination' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     )
   }
