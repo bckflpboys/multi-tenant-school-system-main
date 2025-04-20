@@ -5,8 +5,8 @@ import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
     // Get user session
@@ -15,7 +15,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    const body = await request.json()
     const { schoolId } = body
 
     // Verify user has permission for this school
@@ -30,7 +30,7 @@ export async function DELETE(
 
     // Soft delete the examination by updating status to 'deleted'
     const result = await examinationsCollection.updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(context.params.id) },
       { 
         $set: { 
           status: 'deleted',
@@ -41,19 +41,12 @@ export async function DELETE(
     )
 
     if (result.matchedCount === 0) {
-      return NextResponse.json(
-        { error: 'Examination not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Examination not found' }, { status: 404 })
     }
 
     return NextResponse.json({ message: 'Examination deleted successfully' })
-
   } catch (error) {
-    console.error('Error deleting examination:', error)
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    )
+    console.error('Error:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
