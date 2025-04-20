@@ -13,13 +13,13 @@ export default function DashboardLayout({
       <header className="sticky top-0 z-40 border-b bg-white shadow-sm backdrop-blur-sm bg-white/60 supports-[backdrop-filter]:bg-white/60">
         <div className="container flex h-16 items-center py-4 px-8">
           <div className="flex items-center gap-8 flex-1">
-            <a href="/dashboard" className="flex items-center gap-2 font-semibold text-lg text-gray-900">
+            {/* <a href="/dashboard" className="flex items-center gap-2 font-semibold text-lg text-gray-900">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-blue-600">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
               School System
-            </a>
+            </a> */}
             <MainNav />
           </div>
         </div>
