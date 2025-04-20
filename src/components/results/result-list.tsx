@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useSession } from "next-auth/react"
 import { FaGraduationCap, FaBook, FaCalendarAlt, FaClock, FaChalkboardTeacher, FaClipboardList } from 'react-icons/fa'
-// import { ResultActions } from './result-actions'
+import { ResultActions } from './result-actions'
 
 
 interface Examination {
@@ -200,11 +200,11 @@ export function ResultList() {
                       <p className="mt-1">{examination.description}</p>
                     </div>
                   )}
-                  {/* <div className="pt-2">
+                  <div className="pt-2">
                     <ResultActions examination={examination} onDelete={() => {
                       setExaminations(examinations.filter(e => e._id !== examination._id))
                     }} />
-                  </div> */}
+                  </div>
                 </div>
               </CardContent>
             </div>

@@ -29,17 +29,35 @@ interface Result {
   teacherName: string
 }
 
+interface Examination {
+  _id: string;
+  title: string;
+  subject: string;
+  type: "Exam" | "Test" | "Assignment" | "Quiz";
+  description?: string;
+  startDate: string;
+  endDate: string;
+  duration: number;
+  totalMarks: number;
+  class: string;
+  term: string;
+  academicYear: string;
+  createdBy: string;
+  status: "Upcoming" | "Ongoing" | "Completed";
+}
+
 interface ResultActionsProps {
-  result: Result
+  result?: Result
+  examination?: Examination
   onDelete: () => void
 }
 
-export function ResultActions({ result, onDelete }: ResultActionsProps) {
+export function ResultActions({ result, examination, onDelete }: ResultActionsProps) {
   const { data: session } = useSession()
 
   const handleDelete = async () => {
-    if (!session?.user?.schoolId) {
-      toast.error("No school ID found")
+    if (!session?.user) {
+      toast.error('You must be logged in to delete a result')
       return
     }
 
@@ -48,7 +66,8 @@ export function ResultActions({ result, onDelete }: ResultActionsProps) {
     }
 
     try {
-      const response = await fetch(`/api/results/${result._id}`, {
+      const endpoint = result ? `/api/results/${result._id}` : `/api/examinations/${examination?._id}`
+      const response = await fetch(endpoint, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
