@@ -88,11 +88,11 @@ export function ReadAnnouncementDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold">{announcement.title}</DialogTitle>
-            <div className="flex items-center gap-2">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 md:p-6">
+        <DialogHeader className="space-y-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <DialogTitle className="text-xl md:text-2xl font-bold">{announcement.title}</DialogTitle>
+            <div className="flex flex-wrap gap-2">
               <Badge className={priorityColors[announcement.priority]}>
                 {announcement.priority.charAt(0).toUpperCase() + announcement.priority.slice(1)}
               </Badge>
@@ -101,9 +101,12 @@ export function ReadAnnouncementDialog({
               </Badge>
             </div>
           </div>
-          <DialogDescription className="mt-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="space-y-3">
+            <DialogDescription>
+              Announcement details and metadata
+            </DialogDescription>
+            <div className="grid gap-3 md:grid-cols-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 <span>
                   {format(new Date(announcement.startDate), "PPP")}
@@ -111,18 +114,18 @@ export function ReadAnnouncementDialog({
                     ` - ${format(new Date(announcement.endDate), "PPP")}`}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span>Created by {announcement.createdBy}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 <span>
                   Created on {format(new Date(announcement.createdAt), "PPP")}
                 </span>
               </div>
               {announcement.gradeLevels && announcement.gradeLevels.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   <span>
                     Grade Levels:{" "}
@@ -131,14 +134,15 @@ export function ReadAnnouncementDialog({
                 </div>
               )}
             </div>
-          </DialogDescription>
+          </div>
         </DialogHeader>
-        <div className="mt-4 space-y-4">
-          <div className="prose max-w-none">
-            <p>{announcement.content}</p>
+        <div className="relative mt-6 space-y-4">
+          <div className="absolute -top-3 left-0 right-0 h-px bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200" />
+          <div className="prose prose-sm md:prose-base max-w-none">
+            <p className="text-gray-700 whitespace-pre-wrap">{announcement.content}</p>
           </div>
           {!isRead && (
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-4 border-t">
               <Button
                 onClick={handleMarkAsRead}
                 disabled={isLoading}
