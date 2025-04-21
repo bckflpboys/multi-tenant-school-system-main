@@ -126,6 +126,12 @@ export function MainNav({
       // Show for all users
       show: true
     },
+    {
+      href: "/dashboard/profile",
+      label: "Profile",
+      active: pathname === "/dashboard/profile",
+      show: true // Show for all users
+    },
   ]
 
   return (
@@ -293,7 +299,10 @@ export function MainNav({
               </div>
 
               <div className="grid grid-cols-2 gap-2 mt-2">
-                <DropdownMenuItem className="flex items-center gap-2 p-3 text-gray-700 cursor-pointer rounded-lg hover:bg-gray-50 border border-gray-200 shadow-sm transition-colors">
+                <DropdownMenuItem 
+                  onClick={() => router.push('/dashboard/profile')}
+                  className="flex items-center gap-2 p-3 text-gray-700 cursor-pointer rounded-lg hover:bg-gray-50 border border-gray-200 shadow-sm transition-colors"
+                >
                   <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-100">
                     <User className="h-4 w-4 text-gray-600" />
                   </div>
