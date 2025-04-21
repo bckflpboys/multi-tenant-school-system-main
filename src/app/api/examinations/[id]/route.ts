@@ -5,8 +5,8 @@ import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
 export async function DELETE(
-  request: Request,
-  context: { params: { id: string } }
+  req: Request,
+  { params }: { params: { id: string } }
 ) {
   try {
     // Get user session
@@ -15,7 +15,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await req.json()
     const { schoolId } = body
 
     // Verify user has permission for this school
@@ -30,7 +30,7 @@ export async function DELETE(
 
     // Soft delete the examination by updating status to 'deleted'
     const result = await examinationsCollection.updateOne(
-      { _id: new ObjectId(context.params.id) },
+      { _id: new ObjectId(params.id) },
       { 
         $set: { 
           status: 'deleted',
