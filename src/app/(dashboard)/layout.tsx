@@ -14,7 +14,7 @@ export default function DashboardLayout({
         <MainNav />
       </header>
       <div className="flex">
-        <aside className="fixed left-0 top-16 z-30 hidden h-[calc(100vh-4rem)] w-64 border-r border-gray-200 bg-white/95 backdrop-blur-sm shadow-sm md:block">
+        <aside className="fixed left-0 top-16 z-30 hidden h-[calc(100vh-4rem)] w-72 border-r border-gray-200 bg-white/95 backdrop-blur-sm shadow-sm md:block">
           <div className="flex h-full flex-col py-6">
             <div className="px-4 pb-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900">Navigation</h2>
@@ -24,7 +24,7 @@ export default function DashboardLayout({
             </div>
           </div>
         </aside>
-        <main className="flex-1 ml-0 md:ml-64 min-h-[calc(100vh-4rem)]">
+        <main className="flex-1 ml-0 md:ml-72 min-h-[calc(100vh-4rem)]">
           <div className="container mx-auto py-6 px-4 md:px-8">
             {children}
           </div>
