@@ -6,7 +6,7 @@ import { ObjectId } from "mongodb"
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     // Get user session
@@ -30,7 +30,7 @@ export async function DELETE(
 
     // Soft delete the examination by updating status to 'deleted'
     const result = await examinationsCollection.updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(context.params.id) },
       { 
         $set: { 
           status: 'deleted',
