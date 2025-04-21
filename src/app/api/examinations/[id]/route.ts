@@ -1,11 +1,11 @@
-import { NextResponse, NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
 export async function DELETE(
-  req: NextRequest,
+  request: Request,
   context: { params: { id: string } }
 ) {
   try {
@@ -15,7 +15,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    const body = await request.json()
     const { schoolId } = body
 
     // Verify user has permission for this school
