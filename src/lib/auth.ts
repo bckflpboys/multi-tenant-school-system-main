@@ -64,7 +64,7 @@ export const authOptions: AuthOptions = {
       async authorize(credentials: Credentials | undefined): Promise<User | null> {
         try {
           if (!credentials?.email || !credentials?.password) {
-            throw new Error("Invalid credentials")
+            throw new Error("Please enter both email and password")
           }
 
           const isSuperAdmin = credentials.email.endsWith('@admin.com')
@@ -98,12 +98,12 @@ export const authOptions: AuthOptions = {
           } else {
             // Handle school user auth
             if (!credentials.schoolId || !credentials.userType) {
-              throw new Error("School ID and user type are required")
+              throw new Error("Please select both school and user type")
             }
 
             const config = userTypeConfig[credentials.userType]
             if (!config) {
-              throw new Error("Invalid user type")
+              throw new Error("Invalid user type selected")
             }
 
             const client = await clientPromise
@@ -115,7 +115,7 @@ export const authOptions: AuthOptions = {
             console.log('Found user:', user ? 'Yes' : 'No', 'in collection:', config.collection)
 
             if (!user) {
-              throw new Error("Invalid credentials")
+              throw new Error("No user found with this email in the selected role")
             }
 
             const isCorrectPassword = await bcrypt.compare(
@@ -124,7 +124,7 @@ export const authOptions: AuthOptions = {
             )
 
             if (!isCorrectPassword) {
-              throw new Error("Invalid credentials")
+              throw new Error("Incorrect password")
             }
 
             // Get school name from system-db

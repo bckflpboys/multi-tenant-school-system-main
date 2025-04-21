@@ -93,14 +93,8 @@ export async function middleware(request: NextRequest) {
     const role = token.role as UserRole
     const path = new URL(request.url).pathname
 
-    // Super admin can access all routes except school-specific ones
+    // Super admin can access all routes
     if (role === 'super_admin') {
-      // If trying to access school-specific routes, redirect to dashboard
-      if (path.startsWith('/dashboard/classes') || 
-          path.startsWith('/dashboard/students') ||
-          path.startsWith('/dashboard/grades')) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
-      }
       return NextResponse.next()
     }
 
