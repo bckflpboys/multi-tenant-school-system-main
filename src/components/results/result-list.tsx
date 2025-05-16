@@ -11,6 +11,7 @@ interface Examination {
   _id: string
   title: string
   subject: string
+  code?: string
   type: "Exam" | "Test" | "Assignment" | "Quiz"
   description?: string
   startDate: string
@@ -152,6 +153,11 @@ export function ResultList() {
                       <FaBook className="h-4 w-4 text-blue-500" />
                       {examination.subject} - {examination.class}
                     </CardDescription>
+                    {examination.code && (
+                      <div className="text-blue-600 font-medium text-sm mt-1 flex items-center">
+                        <span className="ml-6">Code: {examination.code}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -163,6 +169,7 @@ export function ResultList() {
                     <div className="text-gray-900">
                       <div className="font-medium">Examination Details</div>
                       <div>Type: {examination.type}</div>
+
                       <div>Total Marks: {examination.totalMarks}</div>
                       <div>Duration: {examination.duration} minutes</div>
                     </div>
