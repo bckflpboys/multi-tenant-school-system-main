@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react"
 import { PrincipalDashboard } from "@/components/dashboard/principal-dashboard"
 import { StudentDashboard } from "@/components/dashboard/student-dashboard"
+import TeacherDashboard from "@/components/dashboard/teacher-dashboard"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function DashboardPage() {
@@ -18,8 +19,7 @@ export default function DashboardPage() {
   if (role === "school_admin") {
     return <PrincipalDashboard />
   } else if (role === "teacher") {
-    // return <TeacherDashboard />
-    return <div>Teacher Dashboard (Coming Soon)</div>
+    return <TeacherDashboard />
   } else if (role === "student") {
     return <StudentDashboard />
   } else if (role === "super_admin") {
