@@ -23,6 +23,11 @@ export async function GET() {
     const teachersCollection = schoolDb.collection("teachers")
     const classesCollection = schoolDb.collection("classes")
     const announcementsCollection = schoolDb.collection("announcements")
+    const subjectsCollection = schoolDb.collection("subjects")
+    const staffCollection = schoolDb.collection("staff")
+    const parentsCollection = schoolDb.collection("parents")
+    const disciplineCollection = schoolDb.collection("discipline")
+    const examinationsCollection = schoolDb.collection("examinations")
 
     const now = new Date()
     const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
@@ -41,6 +46,12 @@ export async function GET() {
     const totalAnnouncements = await announcementsCollection.countDocuments({})
     const newAnnouncementsToday = await announcementsCollection.countDocuments({ createdAt: { $gte: startOfToday } })
 
+    const totalSubjects = await subjectsCollection.countDocuments({})
+    const totalStaff = await staffCollection.countDocuments({})
+    const totalParents = await parentsCollection.countDocuments({})
+    const totalDiscipline = await disciplineCollection.countDocuments({})
+    const totalExaminations = await examinationsCollection.countDocuments({})
+
     return NextResponse.json({
       totalStudents,
       newStudentsThisMonth,
@@ -50,6 +61,11 @@ export async function GET() {
       newClassesThisWeek,
       totalAnnouncements,
       newAnnouncementsToday,
+      totalSubjects,
+      totalStaff,
+      totalParents,
+      totalDiscipline,
+      totalExaminations,
     })
   } catch (error) {
     console.error("Error fetching dashboard data:", error)
