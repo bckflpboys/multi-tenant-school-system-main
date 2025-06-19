@@ -72,6 +72,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url)
     const schoolId = searchParams.get('schoolId')
+    const gradeLevel = searchParams.get('gradeLevel')
 
     if (!schoolId) {
       return NextResponse.json({ error: 'School ID is required' }, { status: 400 })
@@ -87,8 +88,16 @@ export async function GET(req: Request) {
     const schoolDb = client.db(`school-${schoolId}`)
     const classesCollection = schoolDb.collection('classes')
 
-    // Get all classes for the school
-    const classes = await classesCollection.find().toArray()
+    // Build query filters
+    const filter: Record<string, string> = {}
+    
+    // Add grade level filter if provided
+    if (gradeLevel) {
+      filter.gradeLevel = gradeLevel
+    }
+
+    // Get classes for the school with optional filters
+    const classes = await classesCollection.find(filter).toArray()
 
     return NextResponse.json(classes)
 

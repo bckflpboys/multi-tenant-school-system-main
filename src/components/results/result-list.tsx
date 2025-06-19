@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { useSession } from "next-auth/react"
-import { FaGraduationCap, FaBook, FaCalendarAlt, FaClock, FaChalkboardTeacher, FaClipboardList } from 'react-icons/fa'
+import { FaGraduationCap, FaBook, FaCalendarAlt, FaClock, FaChalkboardTeacher, FaClipboardList, FaEye } from 'react-icons/fa'
 import { ResultActions } from './result-actions'
 
 
@@ -26,6 +28,7 @@ interface Examination {
 }
 
 export function ResultList() {
+  const router = useRouter()
   const { data: session } = useSession()
   const [examinations, setExaminations] = useState<Examination[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -207,7 +210,16 @@ export function ResultList() {
                       <p className="mt-1">{examination.description}</p>
                     </div>
                   )}
-                  <div className="pt-2">
+                  <div className="pt-2 flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                      onClick={() => router.push(`/dashboard/examinations/${examination._id}`)}
+                    >
+                      <FaEye className="h-3.5 w-3.5" />
+                      <span>View Classes</span>
+                    </Button>
                     <ResultActions examination={examination} onDelete={() => {
                       setExaminations(examinations.filter(e => e._id !== examination._id))
                     }} />

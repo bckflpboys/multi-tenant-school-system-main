@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -23,6 +24,28 @@ import { Textarea } from "@/components/ui/textarea"
 import { examinationFormSchema, type ExaminationFormValues } from "@/lib/validations/examination"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { generateExamCode } from "@/lib/utils/generate-exam-code"
+import { useSession } from "next-auth/react"
+
+interface Subject {
+  _id: string
+  name: string
+  code: string
+  description?: string
+  gradeLevel?: string
+  schoolId: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface GradeLevel {
+  _id: string
+  name: string
+  code: string
+  description?: string
+  schoolId: string
+  createdAt: string
+  updatedAt: string
+}
 
 interface ExaminationFormProps {
   initialData?: ExaminationFormValues
@@ -31,6 +54,11 @@ interface ExaminationFormProps {
 }
 
 export function ExaminationForm({ initialData, onSubmit, isLoading }: ExaminationFormProps) {
+  const { data: session } = useSession()
+  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [gradeLevels, setGradeLevels] = useState<GradeLevel[]>([])
+  const [isLoadingData, setIsLoadingData] = useState(true)
+  
   const form = useForm<ExaminationFormValues>({
     resolver: zodResolver(examinationFormSchema),
     defaultValues: initialData ?? {
@@ -52,6 +80,34 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
       instructions: "",
     },
   })
+  
+  useEffect(() => {
+    const fetchSchoolData = async () => {
+      try {
+        if (session?.user?.schoolId) {
+          setIsLoadingData(true)
+          
+          // Fetch subjects
+          const subjectsResponse = await fetch(`/api/subjects?schoolId=${session.user.schoolId}`)
+          if (!subjectsResponse.ok) throw new Error('Failed to fetch subjects')
+          const subjectsData = await subjectsResponse.json()
+          setSubjects(subjectsData)
+          
+          // Fetch grade levels
+          const gradeLevelsResponse = await fetch(`/api/grade-levels?schoolId=${session.user.schoolId}`)
+          if (!gradeLevelsResponse.ok) throw new Error('Failed to fetch grade levels')
+          const gradeLevelsData = await gradeLevelsResponse.json()
+          setGradeLevels(gradeLevelsData)
+        }
+      } catch (error) {
+        console.error('Error fetching school data:', error)
+      } finally {
+        setIsLoadingData(false)
+      }
+    }
+
+    fetchSchoolData()
+  }, [session])
 
   const type = form.watch("type")
   const isAssignment = type === "assignment"
@@ -173,13 +229,31 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">Subject</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Enter subject" 
-                        {...field}
-                        className="h-11 border-gray-300 focus:border-gray-400"
-                      />
-                    </FormControl>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                      disabled={isLoadingData || subjects.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white border-gray-300 h-11 text-gray-900">
+                          <SelectValue 
+                            placeholder={isLoadingData ? "Loading subjects..." : subjects.length === 0 ? "No subjects found" : "Select a subject"} 
+                            className="text-gray-900" 
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {subjects.map((subject) => (
+                          <SelectItem 
+                            key={subject._id} 
+                            value={subject.name}
+                            className="text-gray-900"
+                          >
+                            {subject.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
@@ -190,13 +264,31 @@ export function ExaminationForm({ initialData, onSubmit, isLoading }: Examinatio
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">Grade Level</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Enter grade level (e.g., G1, K1)" 
-                        {...field}
-                        className="h-11 border-gray-300 focus:border-gray-400"
-                      />
-                    </FormControl>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                      disabled={isLoadingData || gradeLevels.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white border-gray-300 h-11 text-gray-900">
+                          <SelectValue 
+                            placeholder={isLoadingData ? "Loading grade levels..." : gradeLevels.length === 0 ? "No grade levels found" : "Select a grade level"} 
+                            className="text-gray-900" 
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {gradeLevels.map((gradeLevel) => (
+                          <SelectItem 
+                            key={gradeLevel._id} 
+                            value={gradeLevel.code}
+                            className="text-gray-900"
+                          >
+                            {gradeLevel.name} ({gradeLevel.code})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
