@@ -56,6 +56,8 @@ const mockUser = {
       school_life: true,
       grade_levels: true,
       subjects: true,
+      results: true,
+      library: true,
     },
     customFeatures: {
       api_access: true,
@@ -192,6 +194,25 @@ const sidebarNavSections: NavSection[] = [
     ]
   },
   {
+    title: "Results",
+    items: [
+      {
+        title: "View Results",
+        href: "/dashboard/results",
+        icon: ClipboardCheck,
+        description: "View and manage student results",
+        feature: 'results',
+      },
+      {
+        title: "Result Analysis",
+        href: "/dashboard/results/analysis",
+        icon: BookOpenCheck,
+        description: "Analyze student performance data",
+        feature: 'results',
+      },
+    ]
+  },
+  {
     title: "Monitoring",
     items: [
       {
@@ -226,6 +247,32 @@ const sidebarNavSections: NavSection[] = [
         icon: Wallet,
         description: "Manage fees, payments and expenses",
         feature: 'finances',
+      },
+    ]
+  },
+  {
+    title: "Library",
+    items: [
+      {
+        title: "Books",
+        href: "/dashboard/library/books",
+        icon: BookText,
+        description: "Manage library books and resources",
+        feature: 'library',
+      },
+      {
+        title: "Borrowings",
+        href: "/dashboard/library/borrowings",
+        icon: BookOpen,
+        description: "Track book borrowings and returns",
+        feature: 'library',
+      },
+      {
+        title: "Categories",
+        href: "/dashboard/library/categories",
+        icon: BookOpenCheck,
+        description: "Manage book categories and genres",
+        feature: 'library',
       },
     ]
   },

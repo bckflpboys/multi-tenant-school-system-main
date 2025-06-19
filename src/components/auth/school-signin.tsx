@@ -100,7 +100,16 @@ export function SchoolSignIn() {
       })
 
       if (!result?.ok) {
-        toast.error(result?.error || 'Failed to sign in')
+        toast.error(result?.error || 'Invalid credentials. Please check your email, password, school, and role.', {
+          duration: 4000,
+          style: {
+            background: '#fee2e2',
+            color: '#991b1b',
+            padding: '16px',
+            borderRadius: '8px',
+            maxWidth: '500px',
+          },
+        })
         return
       }
 

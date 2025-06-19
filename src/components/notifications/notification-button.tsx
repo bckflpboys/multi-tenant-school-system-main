@@ -136,14 +136,14 @@ export function NotificationButton({ userId }: NotificationButtonProps) {
             )}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] bg-white p-0">
+        <DialogContent className="w-[95vw] max-w-[425px] p-0 bg-white md:w-[425px]">
           <DialogHeader className="p-4 border-b border-gray-200">
             <DialogTitle className="text-lg font-semibold text-gray-900">Recent Announcements</DialogTitle>
             <DialogDescription className="text-sm text-gray-500">
               Your latest school announcements and updates
             </DialogDescription>
           </DialogHeader>
-          <div className="p-4">
+          <div className="p-4 max-h-[80vh] overflow-y-auto">
             {loading ? (
               <div className="text-center py-4 text-gray-500">Loading...</div>
             ) : announcements.length === 0 ? (
@@ -166,7 +166,7 @@ export function NotificationButton({ userId }: NotificationButtonProps) {
                       key={announcement._id}
                       onClick={() => handleAnnouncementClick(announcement)}
                       className={cn(
-                        "w-full text-left p-3 hover:bg-gray-50/80 transition-all border-l-4 border",
+                        "w-full text-left p-3 hover:bg-gray-50/80 transition-all border-l-4 border rounded-lg",
                         {
                           'bg-purple-50/80 border-purple-100 border-l-purple-500 hover:border-purple-200 hover:bg-purple-50/90': announcement.type === 'general',
                           'bg-blue-50/80 border-blue-100 border-l-blue-500 hover:border-blue-200 hover:bg-blue-50/90': announcement.type === 'academic',
@@ -210,21 +210,23 @@ export function NotificationButton({ userId }: NotificationButtonProps) {
                         )}>
                           {announcement.type}
                         </span>
-                        {announcement.startDate && (
-                          <span className="text-xs text-gray-500 flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {startDate.toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
+                        <div className="w-full mt-2 flex items-center justify-between text-xs text-gray-500">
+                          {announcement.startDate && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {startDate.toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <User className="h-3 w-3" />
+                            {formattedDate}
                           </span>
-                        )}
-                        <span className="text-xs text-gray-400 ml-auto flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {formattedDate}
-                        </span>
+                        </div>
                       </div>
                     </button>
                   )

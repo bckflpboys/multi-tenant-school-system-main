@@ -17,12 +17,17 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/subjects',
     '/dashboard/parents',
     '/dashboard/examinations',
+    '/dashboard/examinations/*',
     '/dashboard/discipline',
     '/dashboard/grade-levels',
     '/dashboard/lessons',
     '/dashboard/announcements',
     '/dashboard/lessons/timetable',
-    '/dashboard/settings'
+    '/dashboard/settings',
+    '/dashboard/library/*',
+    '/dashboard/results',
+    '/dashboard/profile',
+    '/dashboard/results/*'
   ],
   staff: [
     '/dashboard/students',
@@ -30,8 +35,13 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/grades',
     '/dashboard/classes',
     '/dashboard/examinations',
+    '/dashboard/examinations/*',
     '/dashboard/announcements',
-    '/dashboard/subjects'
+    '/dashboard/subjects',
+    '/dashboard/library/*',
+    '/dashboard/results',
+    '/dashboard/profile',
+    '/dashboard/results/*'
   ],
   teacher: [
     '/dashboard/classes',
@@ -41,8 +51,13 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/lessons/timetable',
     '/dashboard/lessons',
     '/dashboard/examinations',
+    '/dashboard/examinations/*',
     '/dashboard/announcements',
-    '/dashboard/subjects'
+    '/dashboard/subjects',
+    '/dashboard/library/*',
+    '/dashboard/results',
+    '/dashboard/profile',
+    '/dashboard/results/*'
   ],
   parent: [
     '/dashboard',
@@ -51,7 +66,10 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/attendance',
     '/dashboard/schedule',
     '/dashboard/announcements',
-    '/dashboard/messages'
+    '/dashboard/messages',
+    '/dashboard/results',
+    '/dashboard/profile',
+    '/dashboard/results/*'
   ],
   student: [
     '/dashboard/grades',
@@ -60,7 +78,12 @@ const roleRouteAccess: Record<UserRole, string[]> = {
     '/dashboard/lessons/timetable',
     '/dashboard/lessons',
     '/dashboard/examinations',
+    '/dashboard/examinations/*',
     '/dashboard/announcements',
+    '/dashboard/results/*',
+    '/dashboard/library/*',
+    '/dashboard/results',
+    '/dashboard/profile',
     '/dashboard/subjects'
   ]
 }
@@ -79,14 +102,8 @@ export async function middleware(request: NextRequest) {
     const role = token.role as UserRole
     const path = new URL(request.url).pathname
 
-    // Super admin can access all routes except school-specific ones
+    // Super admin can access all routes
     if (role === 'super_admin') {
-      // If trying to access school-specific routes, redirect to dashboard
-      if (path.startsWith('/dashboard/classes') || 
-          path.startsWith('/dashboard/students') ||
-          path.startsWith('/dashboard/grades')) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
-      }
       return NextResponse.next()
     }
 

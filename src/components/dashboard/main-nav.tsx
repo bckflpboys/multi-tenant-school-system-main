@@ -18,11 +18,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { toast } from "react-hot-toast"
-import { LogOut, Settings, User, Shield, Building2, Mail, Bell } from "lucide-react"
+import { LogOut, Settings, User, Shield, Building2, Mail, Bell, Menu } from "lucide-react"
 import { NotificationButton } from "@/components/notifications/notification-button"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
+import { SideNav } from "./side-nav"
 
 interface UserData {
   id: string
@@ -124,12 +126,18 @@ export function MainNav({
       // Show for all users
       show: true
     },
+    {
+      href: "/dashboard/profile",
+      label: "Profile",
+      active: pathname === "/dashboard/profile",
+      show: true // Show for all users
+    },
   ]
 
   return (
     <div className="flex items-center w-full bg-white border-b border-gray-200 px-4 py-2.5">
       {/* Logo */}
-      <Link href="/dashboard" className="flex items-center gap-2 mr-8">
+      <Link href="/dashboard" className="flex items-center gap-2">
         <div className="relative h-8 w-8">
           <Image
             src="/praxix-icon.svg"
@@ -144,7 +152,8 @@ export function MainNav({
         </span>
       </Link>
 
-      <nav className={cn("flex items-center space-x-1", className)} {...props}>
+      {/* Desktop Navigation */}
+      <nav className={cn("hidden md:flex items-center space-x-1 ml-8", className)} {...props}>
         {routes
           .filter(route => route.show !== false)
           .map((route) => (
@@ -166,11 +175,46 @@ export function MainNav({
           ))}
       </nav>
 
-      {/* User Profile Dropdown */}
+      {/* Mobile Navigation */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="md:hidden ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-[300px] p-0 bg-white/95 backdrop-blur-sm">
+          <SheetHeader className="p-4 border-b border-gray-100">
+            <SheetTitle asChild>
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <div className="relative h-8 w-8">
+                  <Image
+                    src="/praxix-icon.svg"
+                    alt="Praxix"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+                <span className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                  Praxix
+                </span>
+              </Link>
+            </SheetTitle>
+            <SheetDescription className="sr-only">
+              Navigation menu for mobile devices
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto">
+            <SideNav />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* User Profile and Notifications */}
       <div className="ml-auto flex items-center gap-4">
         {user && <NotificationButton userId={user.id} />}
-        <div className="hidden md:flex items-center gap-3 border-l border-gray-200 pl-4">
-          <div className="flex flex-col items-end gap-0.5">
+        <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
+          <div className="hidden sm:flex flex-col items-end gap-0.5">
             <p className="text-sm font-semibold text-gray-900 leading-none">
               {user?.name ? user.name.split(' ')[0] : 'Loading...'}
             </p>
@@ -255,7 +299,10 @@ export function MainNav({
               </div>
 
               <div className="grid grid-cols-2 gap-2 mt-2">
-                <DropdownMenuItem className="flex items-center gap-2 p-3 text-gray-700 cursor-pointer rounded-lg hover:bg-gray-50 border border-gray-200 shadow-sm transition-colors">
+                <DropdownMenuItem 
+                  onClick={() => router.push('/dashboard/profile')}
+                  className="flex items-center gap-2 p-3 text-gray-700 cursor-pointer rounded-lg hover:bg-gray-50 border border-gray-200 shadow-sm transition-colors"
+                >
                   <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-100">
                     <User className="h-4 w-4 text-gray-600" />
                   </div>

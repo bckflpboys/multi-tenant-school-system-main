@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { ZodError } from "zod"
 import clientPromise from "@/lib/mongodb"
-import { classFormSchema } from "@/lib/validations/class"
+import { resultFormSchema } from "@/lib/validations/result"
 
 export async function POST(req: Request) {
   try {
@@ -14,10 +14,10 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
+    const { schoolId } = body
     
     // Validate the request body
-    const validatedData = classFormSchema.parse(body)
-    const { schoolId } = body
+    const validatedData = resultFormSchema.parse(body)
 
     // Verify user has permission for this school
     if (session.user.schoolId !== schoolId && session.user.role !== 'super_admin') {
@@ -27,36 +27,46 @@ export async function POST(req: Request) {
     // Get MongoDB client and connect to the school's database
     const client = await clientPromise
     const schoolDb = client.db(`school-${schoolId}`)
-    const classesCollection = schoolDb.collection('classes')
+    const resultsCollection = schoolDb.collection('results')
 
-    // Create the class document
-    const newClass = {
+    // Calculate percentage and grade
+    const percentage = (validatedData.score / validatedData.totalMarks) * 100
+    const grade = calculateGrade(percentage)
+    
+    // Create the result record
+    const newResult = {
       ...validatedData,
+      percentage,
+      grade,
       schoolId,
+      teacherId: session.user.id,
+      teacherName: session.user.name,
       createdAt: new Date(),
       updatedAt: new Date(),
+      status: 'active'
     }
 
-    // Insert the class into the school's classes collection
-    const result = await classesCollection.insertOne(newClass)
+    // Insert the result into the school's results collection
+    const result = await resultsCollection.insertOne(newResult)
+    console.log('Created result:', result)
 
-    return NextResponse.json(
-      { message: 'Class created successfully', classId: result.insertedId },
-      { status: 201 }
-    )
+    return NextResponse.json({
+      message: 'Result created successfully',
+      result: {
+        id: result.insertedId,
+        ...newResult
+      }
+    })
 
   } catch (error) {
-    console.error('Error creating class:', error)
+    console.error('Error creating result:', error)
     
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: error.errors }, { status: 400 })
     }
 
     return NextResponse.json(
-      { error: 'Error creating class' },
+      { error: 'Failed to create result' },
       { status: 500 }
     )
   }
@@ -70,9 +80,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get schoolId from query params
     const { searchParams } = new URL(req.url)
     const schoolId = searchParams.get('schoolId')
-    const gradeLevel = searchParams.get('gradeLevel')
 
     if (!schoolId) {
       return NextResponse.json({ error: 'School ID is required' }, { status: 400 })
@@ -86,26 +96,34 @@ export async function GET(req: Request) {
     // Get MongoDB client and connect to the school's database
     const client = await clientPromise
     const schoolDb = client.db(`school-${schoolId}`)
-    const classesCollection = schoolDb.collection('classes')
+    const resultsCollection = schoolDb.collection('results')
 
-    // Build query filters
-    const filter: Record<string, string> = {}
-    
-    // Add grade level filter if provided
-    if (gradeLevel) {
-      filter.gradeLevel = gradeLevel
-    }
+    // Get all results for the school
+    const results = await resultsCollection
+      .find({ status: 'active' })
+      .sort({ createdAt: -1 })
+      .toArray()
 
-    // Get classes for the school with optional filters
-    const classes = await classesCollection.find(filter).toArray()
-
-    return NextResponse.json(classes)
+    return NextResponse.json(results)
 
   } catch (error) {
-    console.error('Error fetching classes:', error)
+    console.error('Error fetching results:', error)
     return NextResponse.json(
-      { error: 'Error fetching classes' },
+      { error: 'Failed to fetch results' },
       { status: 500 }
     )
   }
+}
+
+// Helper function to calculate grade
+function calculateGrade(percentage: number): string {
+  if (percentage >= 97) return "A+"
+  if (percentage >= 93) return "A"
+  if (percentage >= 90) return "B+"
+  if (percentage >= 87) return "B"
+  if (percentage >= 83) return "C+"
+  if (percentage >= 80) return "C"
+  if (percentage >= 77) return "D+"
+  if (percentage >= 70) return "D"
+  return "F"
 }
