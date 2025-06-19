@@ -19,7 +19,8 @@ export async function GET() {
     const client = await clientPromise
     const schoolDb = client.db(`school-${schoolId}`)
 
-    const usersCollection = schoolDb.collection("users")
+    const studentsCollection = schoolDb.collection("students")
+    const teachersCollection = schoolDb.collection("teachers")
     const classesCollection = schoolDb.collection("classes")
     const announcementsCollection = schoolDb.collection("announcements")
 
@@ -28,11 +29,11 @@ export async function GET() {
     const oneWeekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-    const totalStudents = await usersCollection.countDocuments({ role: "student" })
-    const newStudentsThisMonth = await usersCollection.countDocuments({ role: "student", createdAt: { $gte: oneMonthAgo } })
+    const totalStudents = await studentsCollection.countDocuments({})
+    const newStudentsThisMonth = await studentsCollection.countDocuments({ createdAt: { $gte: oneMonthAgo } })
 
-    const totalTeachers = await usersCollection.countDocuments({ role: "teacher" })
-    const newTeachersThisMonth = await usersCollection.countDocuments({ role: "teacher", createdAt: { $gte: oneMonthAgo } })
+    const totalTeachers = await teachersCollection.countDocuments({})
+    const newTeachersThisMonth = await teachersCollection.countDocuments({ createdAt: { $gte: oneMonthAgo } })
 
     const totalClasses = await classesCollection.countDocuments({})
     const newClassesThisWeek = await classesCollection.countDocuments({ createdAt: { $gte: oneWeekAgo } })
