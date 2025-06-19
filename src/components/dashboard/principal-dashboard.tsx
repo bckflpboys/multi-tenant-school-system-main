@@ -1,59 +1,91 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Overview } from "@/components/dashboard/overview"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { Users, GraduationCap, BookOpen, Bell } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+
+interface DashboardData {
+  totalStudents: number
+  newStudentsThisMonth: number
+  totalTeachers: number
+  newTeachersThisMonth: number
+  totalClasses: number
+  newClassesThisWeek: number
+  totalAnnouncements: number
+  newAnnouncementsToday: number
+}
 
 export function PrincipalDashboard() {
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch("/api/dashboard/school-admin")
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboard data")
+        }
+        const result = await response.json()
+        setData(result)
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message)
+        } else {
+          setError("An unknown error occurred")
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (isLoading) {
+    return <PrincipalDashboardSkeleton />
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>
+  }
+
+  if (!data) {
+    return <div>No data available.</div>
+  }
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight text-gray-800">Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-800">Principal&apos;s Dashboard</h2>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 shadow-sm hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-600">
-              Total Students
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-blue-600">Total Students</CardTitle>
             <div className="h-8 w-8 rounded-full bg-blue-500/10 p-2 border border-blue-500/20">
               <Users className="h-4 w-4 text-blue-500" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-900">245</div>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="text-xs text-green-600 font-medium flex items-center">
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                </svg>
-                +4
-              </span>
-              <span className="text-xs text-gray-500">this month</span>
-            </div>
+            <div className="text-2xl font-bold text-blue-900">{data.totalStudents}</div>
+            <p className="text-xs text-muted-foreground">+{data.newStudentsThisMonth} this month</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 shadow-sm hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-600">
-              Total Teachers
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-green-600">Total Teachers</CardTitle>
             <div className="h-8 w-8 rounded-full bg-green-500/10 p-2 border border-green-500/20">
               <GraduationCap className="h-4 w-4 text-green-500" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-900">15</div>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="text-xs text-green-600 font-medium flex items-center">
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                </svg>
-                +2
-              </span>
-              <span className="text-xs text-gray-500">this month</span>
-            </div>
+            <div className="text-2xl font-bold text-green-900">{data.totalTeachers}</div>
+            <p className="text-xs text-muted-foreground">+{data.newTeachersThisMonth} this month</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 shadow-sm hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
@@ -64,38 +96,20 @@ export function PrincipalDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-900">12</div>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="text-xs text-green-600 font-medium flex items-center">
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                </svg>
-                +1
-              </span>
-              <span className="text-xs text-gray-500">since last week</span>
-            </div>
+            <div className="text-2xl font-bold text-purple-900">{data.totalClasses}</div>
+            <p className="text-xs text-muted-foreground">+{data.newClassesThisWeek} since last week</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 shadow-sm hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-600">
-              Announcements
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-orange-600">Announcements</CardTitle>
             <div className="h-8 w-8 rounded-full bg-orange-500/10 p-2 border border-orange-500/20">
               <Bell className="h-4 w-4 text-orange-500" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-900">4</div>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="text-xs text-green-600 font-medium flex items-center">
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                </svg>
-                2
-              </span>
-              <span className="text-xs text-gray-500">new today</span>
-            </div>
+            <div className="text-2xl font-bold text-orange-900">{data.totalAnnouncements}</div>
+            <p className="text-xs text-muted-foreground">+{data.newAnnouncementsToday} new today</p>
           </CardContent>
         </Card>
       </div>
@@ -126,3 +140,24 @@ export function PrincipalDashboard() {
     </div>
   )
 }
+
+function PrincipalDashboardSkeleton() {
+  return (
+    <div className="flex-1 space-y-4 p-8 pt-6 animate-pulse">
+      <div className="flex items-center justify-between space-y-2">
+        <Skeleton className="h-8 w-64" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <Skeleton className="col-span-4 h-80 rounded-lg" />
+        <Skeleton className="col-span-3 h-80 rounded-lg" />
+      </div>
+    </div>
+  )
+}
+
